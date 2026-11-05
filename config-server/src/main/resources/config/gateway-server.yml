@@ -17,34 +17,46 @@ spring:
             locator:
               enabled: false
           routes:
-            - id: user-service
+            - id: user-service-auth
               uri: lb://user-service
               predicates:
-                - Path=/api/v1/users/**, /api/v1/auth/**
+                - Path=/api/v1/auth/**
+
+            - id: user-service-api
+              uri: lb://user-service
+              predicates:
+                - Path=/api/v1/users/**
+
             - id: auction-service
               uri: lb://auction-service
               predicates:
                 - Path=/api/v1/auctions/**, /api/v1/products/**
+
             - id: bid-service
               uri: lb://bid-service
               predicates:
                 - Path=/api/v1/bids/**
+
             - id: bid-service-ws
               uri: lb:ws://bid-service
               predicates:
                 - Path=/ws/**
+
             - id: order-service
               uri: lb://order-service
               predicates:
                 - Path=/api/v1/orders/**
+
             - id: payment-service
               uri: lb://payment-service
               predicates:
                 - Path=/api/v1/payments/**
+
             - id: notification-service
               uri: lb://notification-service
               predicates:
-                - Path=/api/v1/notifications/**
+                - Path=/api/v1/notifications/**, /api/v1/admin/notifications/**
+
             - id: ai-service
               uri: lb://ai-service
               predicates:

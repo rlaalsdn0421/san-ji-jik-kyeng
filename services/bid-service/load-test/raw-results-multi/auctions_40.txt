@@ -1,0 +1,25 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+
+     execution: local
+        script: multi-auction-throughput-test.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 400 max VUs, 1m30s max duration (incl. graceful stop):
+              * multi_auction_bids: 400 iterations shared among 400 VUs (maxDuration: 1m0s, gracefulStop: 30s)
+
+time="2026-09-22T19:27:42+09:00" level=info msg="\n===== 다중 경매 처리량 테스트 결과 =====" source=console
+time="2026-09-22T19:27:42+09:00" level=info msg="경매 수: 40, 경매당 비더: 10, 총 VU: 400" source=console
+time="2026-09-22T19:27:42+09:00" level=info msg="총 시도: 400, 성공: 38, 실패(정상거부): 167, 미응답(3s): 195, 연결오류: 0" source=console
+time="2026-09-22T19:27:42+09:00" level=info msg="\n✅ 정상: 경매당 성공 1건 이하 유지" source=console
+time="2026-09-22T19:27:42+09:00" level=info msg="\n===== 지표 =====" source=console
+time="2026-09-22T19:27:42+09:00" level=info msg="bid_latency_ms: avg=422.2 min=174.0 p(90)=543.6 p(95)=551.0 max=561.0" source=console
+time="2026-09-22T19:27:42+09:00" level=info msg="처리시간: 0.57s, TPS(iterations/s): 705.3" source=console
+
+running (0m00.6s), 000/400 VUs, 400 complete and 0 interrupted iterations
+multi_auction_bids ✓ [ 100% ] 400 VUs  0m00.6s/1m0s  400/400 shared iters

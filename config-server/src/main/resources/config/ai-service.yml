@@ -14,6 +14,7 @@ spring:
     baseline-on-migrate: true
 
   jpa:
+    open-in-view: false # 요청 전체 동안 커넥션이 점유되는 것을 막기 위해 명시적으로 끔
     hibernate:
       ddl-auto: validate
     properties:

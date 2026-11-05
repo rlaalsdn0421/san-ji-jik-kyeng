@@ -59,3 +59,5 @@ api-test.html
 user-api-test.html
 
 .DS_Store
+### Local Scripts ###
+make_csv.py

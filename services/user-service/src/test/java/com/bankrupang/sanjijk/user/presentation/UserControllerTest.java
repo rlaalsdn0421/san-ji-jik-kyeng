@@ -6,7 +6,7 @@ import com.bankrupang.sanjijk.user.domain.UserRole;
 import com.bankrupang.sanjijk.user.domain.UserStatus;
 import com.bankrupang.sanjijk.user.domain.exception.UserNotFoundException;
 import com.bankrupang.sanjijk.user.domain.exception.UserSuspendedException;
-import com.bankrupang.sanjijk.user.infrastructure.config.SecurityConfig;
+import com.bankrupang.sanjijk.common.config.CommonSecurityConfig;
 import com.bankrupang.sanjijk.user.presentation.controller.UserController;
 import com.bankrupang.sanjijk.user.presentation.dto.request.*;
 import com.bankrupang.sanjijk.user.presentation.dto.response.*;
@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,15 +30,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserController.class)
-@Import({SecurityConfig.class, GlobalExceptionHandler.class, UserControllerTest.MethodSecurityConfig.class})
+@Import({CommonSecurityConfig.class, GlobalExceptionHandler.class})
 @TestPropertySource(properties = {
         "spring.cloud.config.enabled=false",
         "eureka.client.enabled=false"
 })
 class UserControllerTest {
 
-    @EnableMethodSecurity
-    static class MethodSecurityConfig {}
 
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
@@ -174,28 +171,28 @@ class UserControllerTest {
     // 유저 단건 조회 (MASTER/MANAGER 전용)
     // ──────────────────────────────────────────────────
     @Nested
-    @DisplayName("GET /api/v1/user/one")
+    @DisplayName("GET /api/v1/users/one")
     class GetUserApi {
 
         @Test
         @DisplayName("MASTER 권한으로 조회 성공 - 200 OK")
         void getUser_asMaster_success() throws Exception {
             var response = new AdminUserDetailResponse(USER_ID, "testuser", "테스트유저",
-                    "test@test.com", "010-1234-5678", UserRole.BUYER, UserStatus.ACTIVE);
+                    "test@test.com", "010-1234-5678", "U122DSDFW",UserRole.BUYER, UserStatus.ACTIVE);
             given(userService.getAdminUserDetail(any())).willReturn(response);
 
-            mockMvc.perform(get("/api/v1/user/one")
+            mockMvc.perform(get("/api/v1/users/one")
                             .param("userId", USER_ID.toString())
                             .header("X-User-Id", USER_ID.toString())
                             .header("X-User-Role", "MASTER"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.username").value("testuser"));
+                    .andExpect(jsonPath("$.data.name").value("testuser"));
         }
 
         @Test
         @DisplayName("인증 없이 접근 → 403 Forbidden")
         void getUser_noAuth_403() throws Exception {
-            mockMvc.perform(get("/api/v1/user/one")
+            mockMvc.perform(get("/api/v1/users/one")
                             .param("userId", USER_ID.toString()))
                     .andExpect(status().isForbidden());
         }
@@ -203,7 +200,7 @@ class UserControllerTest {
         @Test
         @DisplayName("BUYER 권한으로 접근 → 403 Forbidden")
         void getUser_buyerRole_403() throws Exception {
-            mockMvc.perform(get("/api/v1/user/one")
+            mockMvc.perform(get("/api/v1/users/one")
                             .param("userId", USER_ID.toString())
                             .header("X-User-Id", USER_ID.toString())
                             .header("X-User-Role", "BUYER"))
@@ -215,7 +212,7 @@ class UserControllerTest {
         void getUser_notFound_404() throws Exception {
             given(userService.getAdminUserDetail(any())).willThrow(new UserNotFoundException());
 
-            mockMvc.perform(get("/api/v1/user/one")
+            mockMvc.perform(get("/api/v1/users/one")
                             .param("userId", USER_ID.toString())
                             .header("X-User-Id", USER_ID.toString())
                             .header("X-User-Role", "MASTER"))

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1280px;
+    height: 720px;
+    background: #0f172a;
+    font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 48px 60px 40px;
+  }
+
+  /* 배경 장식 */
+  .bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    pointer-events: none;
+  }
+  .bg-circle-1 { width: 400px; height: 400px; background: #3b82f6; top: -100px; right: 100px; }
+  .bg-circle-2 { width: 300px; height: 300px; background: #6366f1; bottom: -50px; left: 200px; }
+
+  /* 헤더 */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(99,102,241,0.2);
+    border: 1px solid rgba(99,102,241,0.4);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    color: #a5b4fc;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    width: fit-content;
+  }
+  .chip-dot { width: 6px; height: 6px; background: #6366f1; border-radius: 50%; }
+
+  .problem-title {
+    font-size: 30px;
+    font-weight: 800;
+    color: #f1f5f9;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .problem-title span { color: #f87171; }
+
+  .problem-sub {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 28px;
+  }
+
+  /* 카드 영역 */
+  .cards {
+    display: flex;
+    gap: 24px;
+    flex: 1;
+  }
+
+  .card {
+    flex: 1;
+    border-radius: 16px;
+    padding: 28px 30px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-left {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .card-right {
+    background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(59,130,246,0.1));
+    border: 1.5px solid rgba(99,102,241,0.5);
+  }
+
+  .card-right::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6366f1, #3b82f6);
+    border-radius: 16px 16px 0 0;
+  }
+
+  .badge {
+    position: absolute;
+    top: 20px; right: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .badge-no { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .badge-yes { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+
+  .card-icon { font-size: 28px; margin-bottom: 8px; }
+  .card-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 18px;
+  }
+  .card-left .card-title { color: #94a3b8; }
+  .card-right .card-title { color: #a5b4fc; }
+
+  .divider {
+    height: 1px;
+    background: rgba(255,255,255,0.07);
+    margin-bottom: 16px;
+  }
+
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .item-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-top: 7px;
+    flex-shrink: 0;
+  }
+  .dot-neutral { background: #475569; }
+  .dot-good { background: #4ade80; }
+  .dot-bad { background: #f87171; }
+
+  .item-text-neutral { color: #94a3b8; }
+  .item-text-good { color: #86efac; }
+  .item-text-bad { color: #fca5a5; }
+
+  /* 하단 태그 */
+  .tags {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .tag-label { font-size: 11px; color: #475569; font-weight: 600; margin-right: 4px; }
+  .tag {
+    background: rgba(99,102,241,0.12);
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    color: #a5b4fc;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tag-icon { font-size: 13px; }
+
+  /* 우측 작은 흐름도 */
+  .flow {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid rgba(99,102,241,0.2);
+  }
+  .flow-title { font-size: 11px; color: #64748b; margin-bottom: 8px; letter-spacing: 0.05em; }
+  .flow-steps {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .flow-step {
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 11px;
+    color: #a5b4fc;
+    white-space: nowrap;
+  }
+  .flow-arrow { color: #4f46e5; font-size: 14px; }
+</style>
+</head>
+<body>
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <div class="chip"><span class="chip-dot"></span>핵심 의사결정 (3) · 경매 방식</div>
+
+  <div class="problem-title">마감 직전 <span>sniping 집중</span>, 참여자 간 기회 불균등 문제</div>
+  <div class="problem-sub">고정 시간 방식에서는 마지막 수 초 입찰 시 다른 참여자가 대응할 시간 없음 → 공정한 경쟁 불가</div>
+
+  <div class="cards">
+    <!-- 왼쪽: 미채택 -->
+    <div class="card card-left">
+      <span class="badge badge-no">미채택</span>
+      <div class="card-icon">⏰</div>
+      <div class="card-title">1시간 고정 유지</div>
+      <div class="divider"></div>
+      <div class="item">
+        <div class="item-dot dot-neutral"></div>
+        <span class="item-text-neutral">방식: 경매 시작 후 1시간 고정 종료</span>
+      </div>
+      <div class="item">
+        <div class="item-dot dot-good"></div>
+        <span class="item-text-good">종료 시각 예측 가능</span>
+      </div>
+      <div class="item">
+        <div class="item-dot dot-bad"></div>
+        <span class="item-text-bad">마감 직전 sniping 집중 — 불공정</span>
+      </div>
+      <div class="item">
+        <div class="item-dot dot-bad"></div>
+        <span class="item-text-bad">참여자 간 응찰 기회 불균등</span>
+      </div>
+      <div class="item">
+        <div class="item-dot dot-bad"></div>
+        <span class="item-text-bad">경쟁 없어도 1시간 내내 경매 유지</span>
+      </div>
+
+      <div class="flow" style="border-top: 1px solid rgba(255,255,255,0.07);">
+        <div class="flow-title">종료 흐름</div>
+        <div class="flow-steps">
+          <div class="flow-step" style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.1); color:#64748b;">경매 시작</div>
+          <div class="flow-arrow" style="color:#475569;">→</div>
+          <div class="flow-step" style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.1); color:#64748b;">1시간 카운트다운</div>
+          <div class="flow-arrow" style="color:#475569;">→</div>
+          <div class="flow-step" style="background:rgba(239,68,68,0.12); border-color:rgba(239,68,68,0.35); color:#f87171;">⚠ 마감 직전 Sniping</div>
+          <div class="flow-arrow" style="color:#475569;">→</div>
+          <div class="flow-step" style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.1); color:#64748b;">시간 종료 → 낙찰</div>
+        </div>
+        <div style="font-size:11px; color:#ef4444; margin-top:7px; padding-left:2px;">※ 대응 시간 없음 — 다른 참여자 반응 불가</div>
+      </div>
+    </div>
+
+    <!-- 오른쪽: 채택 -->
+    <div class="card card-right">
+      <span class="badge badge-yes">✓ 채택</span>
+      <div class="card-icon">⚡</div>
+      <div class="card-title">낙찰 후 1분만 유지 (Anti-Sniping)</div>
+      <div class="divider"></div>
+      <!-- Anti-Sniping 설명 박스 -->
+      <div style="background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.25); border-radius:10px; padding:10px 14px; margin-bottom:14px;">
+        <div style="font-size:11px; color:#fbbf24; font-weight:700; letter-spacing:0.05em; margin-bottom:4px;">⚠ SNIPING 이란?</div>
+        <div style="font-size:12px; color:#94a3b8; line-height:1.5;">경매 마감 직전 기습 입찰로 다른 참여자가 반응할 시간을 빼앗는 행위<br>→ <span style="color:#fbbf24;">입찰 시마다 1분 리셋</span>으로 원천 차단</div>
+      </div>
+      <div class="item">
+        <div class="item-dot dot-neutral"></div>
+        <span class="item-text-neutral">방식: 마지막 입찰 후 1분 내 경쟁 없으면 즉시 종료</span>
+      </div>
+      <div class="item">
+        <div class="item-dot dot-good"></div>
+        <span class="item-text-good">모든 참여자에게 동등한 1분 응찰 기회 보장</span>
+      </div>
+      <div class="item">
+        <div class="item-dot dot-good"></div>
+        <span class="item-text-good">경쟁 없으면 자연 종료 — 불필요한 대기 없음</span>
+      </div>
+
+      <div class="flow">
+        <div class="flow-title">종료 흐름</div>
+        <div class="flow-steps">
+          <div class="flow-step">입찰 발생</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">1분 카운트다운</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">경쟁 입찰 시 리셋</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">경쟁 없으면 종료</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tags">
+    <span class="tag-label">구현 키워드</span>
+    <div class="tag"><span class="tag-icon">🔑</span>Redis ZSet 스코어 갱신</div>
+    <div class="tag"><span class="tag-icon">⏱</span>Scheduler 1분 폴링</div>
+    <div class="tag"><span class="tag-icon">🔒</span>Redisson 분산 락</div>
+  </div>
+</body>
+</html>

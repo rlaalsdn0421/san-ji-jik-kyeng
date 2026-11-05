@@ -15,12 +15,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Set up Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
 
       - name: Get git diff for PR
         env:
@@ -51,9 +51,10 @@ jobs:
 
       - name: Run Gemini Review
         id: gemini_review
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
         with:
           script: |
             const fs = require("fs");
@@ -106,7 +107,7 @@ jobs:
                 "Content-Type": "application/json"
               },
               body: JSON.stringify({
-                model: "google/gemini-3.1-pro-preview",
+                model: process.env.GEMINI_MODEL,
                 messages: [{ role: "user", content: prompt }]
               })
             });
@@ -123,7 +124,7 @@ jobs:
             console.log("Review results saved!");
 
       - name: Comment on Pull Request
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require("fs");

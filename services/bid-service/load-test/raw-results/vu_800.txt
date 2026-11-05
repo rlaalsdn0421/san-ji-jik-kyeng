@@ -1,0 +1,27 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+
+     execution: local
+        script: concurrent-bid-test.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 800 max VUs, 1m30s max duration (incl. graceful stop):
+              * concurrent_bids: 800 iterations shared among 800 VUs (maxDuration: 1m0s, gracefulStop: 30s)
+
+time="2026-09-22T18:50:06+09:00" level=info msg="\n===== 동시 입찰 테스트 결과 =====" source=console
+time="2026-09-22T18:50:06+09:00" level=info msg="총 입찰 시도: 800" source=console
+time="2026-09-22T18:50:06+09:00" level=info msg="입찰 성공 수: 1" source=console
+time="2026-09-22T18:50:06+09:00" level=info msg="입찰 실패 수: 211" source=console
+time="2026-09-22T18:50:06+09:00" level=info msg="연결 오류: 0" source=console
+time="2026-09-22T18:50:06+09:00" level=info msg="\n✅ 정상: 동시 성공 1건 이하" source=console
+time="2026-09-22T18:50:06+09:00" level=info msg="\n===== 지표 =====" source=console
+time="2026-09-22T18:50:06+09:00" level=info msg="bid_latency_ms: avg=539.8 min=274.0 p(90)=710.0 p(95)=731.8 max=753.0" source=console
+time="2026-09-22T18:50:06+09:00" level=info msg="처리시간: 0.76s, TPS(iterations/s): 1059.3" source=console
+
+running (0m00.8s), 000/800 VUs, 800 complete and 0 interrupted iterations
+concurrent_bids ✓ [ 100% ] 800 VUs  0m00.8s/1m0s  800/800 shared iters

@@ -1,0 +1,43 @@
+<svg viewBox="0 0 860 420" xmlns="http://www.w3.org/2000/svg" font-family="Arial,sans-serif">
+  <rect width="860" height="420" fill="white"/>
+
+  <!-- 상단 라벨 -->
+  <text x="430" y="36" text-anchor="middle" font-size="13" fill="#6b7280">경매 방식: 1시간 유지 vs 낙찰 후 1분만 유지</text>
+
+  <!-- 메인 제목 -->
+  <text x="430" y="72" text-anchor="middle" font-size="24" font-weight="700" fill="#1a1a2e">마감 직전 입찰 집중, 참여자 간 불균등 문제</text>
+
+  <!-- 부제 -->
+  <text x="430" y="100" text-anchor="middle" font-size="13" fill="#6b7280">고정 시간 방식에서는 마지막 수 초에 입찰 시 다른 참여자가 대응할 시간이 없어 참여 기회 불균등</text>
+
+  <!-- 왼쪽 박스 -->
+  <rect x="40" y="120" width="370" height="210" rx="8" fill="white" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="225" y="155" text-anchor="middle" font-size="15" font-weight="600" fill="#374151">1시간 고정 유지</text>
+  <line x1="40" y1="165" x2="410" y2="165" stroke="#f3f4f6" stroke-width="1"/>
+  <text x="65" y="192" font-size="13" fill="#4b5563">• 방식: 경매 시작 후 1시간 고정 종료</text>
+  <text x="65" y="218" font-size="13" fill="#4b5563">• 장점: 종료 시각 예측 가능</text>
+  <text x="65" y="244" font-size="13" fill="#4b5563">• 단점: 마감 직전 sniping 집중</text>
+  <text x="65" y="270" font-size="13" fill="#4b5563">• 단점: 참여자 간 응찰 기회 불균등</text>
+
+  <!-- 오른쪽 박스 -->
+  <rect x="450" y="120" width="370" height="210" rx="8" fill="#f8f9ff" stroke="#6b8cde" stroke-width="2"/>
+  <text x="548" y="155" text-anchor="middle" font-size="15" font-weight="600" fill="#3b5bdb">✓ 낙찰 후 1분만 유지</text>
+  <line x1="450" y1="165" x2="820" y2="165" stroke="#dde3f5" stroke-width="1"/>
+  <text x="475" y="192" font-size="13" fill="#4b5563">• 방식: 마지막 입찰 후 1분 내 경쟁 없으면 즉시 종료</text>
+  <text x="475" y="218" font-size="13" fill="#4b5563">• 장점: sniping 방지</text>
+  <text x="475" y="244" font-size="13" fill="#4b5563">• 장점: 모든 참여자에게 동등한 1분 응찰 기회</text>
+  <text x="475" y="270" font-size="13" fill="#4b5563">• 장점: 경쟁 없으면 자연 종료</text>
+
+  <!-- 하단 태그 라벨 -->
+  <text x="40" y="358" font-size="13" font-weight="600" fill="#6b7280">종료 조건</text>
+
+  <!-- 태그들 -->
+  <rect x="40" y="370" width="200" height="32" rx="16" fill="#f3f4f6"/>
+  <text x="140" y="391" text-anchor="middle" font-size="12" fill="#374151">마지막 입찰 후 1분 카운트다운</text>
+
+  <rect x="252" y="370" width="130" height="32" rx="16" fill="#f3f4f6"/>
+  <text x="317" y="391" text-anchor="middle" font-size="12" fill="#374151">경쟁 입찰 시 리셋</text>
+
+  <rect x="394" y="370" width="150" height="32" rx="16" fill="#f3f4f6"/>
+  <text x="469" y="391" text-anchor="middle" font-size="12" fill="#374151">경쟁 없으면 즉시 종료</text>
+</svg>

@@ -1,4 +1,5 @@
 HELP.md
+load-test/auctions.json
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +39,7 @@ public class OrderController {
     @GetMapping("/deposit/me")
     public ResponseEntity<ApiResponse<Page<OrderResponse>>> getMyDepositOrders(
             @RequestHeader("X-User-Id") UUID userId,
-            Pageable pageable
+            @ParameterObject Pageable pageable
     ) {
         return ResponseEntity.ok(ApiResponse.ok(orderService.getMyDepositOrders(userId, pageable)));
     }
@@ -47,7 +48,7 @@ public class OrderController {
     @GetMapping("/winning/me")
     public ResponseEntity<ApiResponse<Page<OrderResponse>>> getMyWinningOrders(
             @RequestHeader("X-User-Id") UUID userId,
-            Pageable pageable
+            @ParameterObject Pageable pageable
     ) {
         return ResponseEntity.ok(ApiResponse.ok(orderService.getMyWinningOrders(userId, pageable)));
     }

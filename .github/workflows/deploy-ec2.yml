@@ -31,10 +31,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
@@ -42,7 +42,7 @@ jobs:
       - name: Cache JMX Exporter JAR
         id: cache-jmx
         if: ${{ inputs.target == 'kafka' || inputs.target == 'both' }}
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: jmx/jmx_prometheus_javaagent-${{ env.JMX_VERSION }}.jar
           key: jmx-exporter-${{ env.JMX_VERSION }}

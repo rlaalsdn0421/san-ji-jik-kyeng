@@ -1,0 +1,30 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+
+     execution: local
+        script: concurrent-bid-test.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 3000 max VUs, 1m30s max duration (incl. graceful stop):
+              * concurrent_bids: 3000 iterations shared among 3000 VUs (maxDuration: 1m0s, gracefulStop: 30s)
+
+
+running (0m00.8s), 0062/3000 VUs, 2938 complete and 0 interrupted iterations
+concurrent_bids   [  98% ] 3000 VUs  0m00.8s/1m0s  2938/3000 shared iters
+time="2026-09-22T18:50:19+09:00" level=info msg="\n===== 동시 입찰 테스트 결과 =====" source=console
+time="2026-09-22T18:50:19+09:00" level=info msg="총 입찰 시도: 3000" source=console
+time="2026-09-22T18:50:19+09:00" level=info msg="입찰 성공 수: 1" source=console
+time="2026-09-22T18:50:19+09:00" level=info msg="입찰 실패 수: 227" source=console
+time="2026-09-22T18:50:19+09:00" level=info msg="연결 오류: 0" source=console
+time="2026-09-22T18:50:19+09:00" level=info msg="\n✅ 정상: 동시 성공 1건 이하" source=console
+time="2026-09-22T18:50:19+09:00" level=info msg="\n===== 지표 =====" source=console
+time="2026-09-22T18:50:19+09:00" level=info msg="bid_latency_ms: avg=666.8 min=383.0 p(90)=833.9 p(95)=871.6 max=918.0" source=console
+time="2026-09-22T18:50:19+09:00" level=info msg="처리시간: 0.92s, TPS(iterations/s): 3247.9" source=console
+
+running (0m00.9s), 0000/3000 VUs, 3000 complete and 0 interrupted iterations
+concurrent_bids ✓ [ 100% ] 3000 VUs  0m00.9s/1m0s  3000/3000 shared iters

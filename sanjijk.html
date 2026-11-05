@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>산지직경 — 산지에서 직접 경매로</title>
+    <style>
+        :root{
+            --g900:#1b4332;--g800:#2d6a4f;--g700:#40916c;--g600:#52b788;--g400:#95d5b2;--g200:#d8f3dc;--g100:#f0faf3;
+            --neu900:#1a1a2e;--neu700:#374151;--neu500:#6b7280;--neu400:#9ca3af;--neu300:#d1d5db;--neu200:#e5e7eb;--neu100:#f9fafb;
+            --acc:#e9c46a;--accD:#f4a261;--red:#e63946;--redL:#fee2e2;
+            --radius:10px;--radius-lg:16px;--shadow:0 1px 3px rgba(0,0,0,.10),0 1px 2px rgba(0,0,0,.06);--shadow-lg:0 10px 25px rgba(0,0,0,.12);
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI',sans-serif;background:var(--neu100);color:var(--neu900);min-height:100vh}
+        a{text-decoration:none;color:inherit}
+        button{cursor:pointer;font-family:inherit}
+        input,select,textarea{font-family:inherit}
+
+        /* ── HEADER ── */
+        .hdr{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid var(--neu200);height:60px;display:flex;align-items:center}
+        .hdr-inner{max-width:1200px;margin:0 auto;width:100%;padding:0 24px;display:flex;align-items:center;gap:24px}
+        .logo{font-size:20px;font-weight:800;color:var(--g800);cursor:pointer;white-space:nowrap}
+        .logo span{color:var(--g600)}
+        .nav{display:flex;gap:4px;flex:1}
+        .nav-btn{padding:6px 14px;border:none;background:none;font-size:14px;color:var(--neu500);border-radius:8px;transition:all .15s}
+        .nav-btn:hover{background:var(--g100);color:var(--g800)}
+        .nav-btn.active{background:var(--g100);color:var(--g800);font-weight:600}
+        .hdr-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+        .avatar{width:34px;height:34px;border-radius:50%;background:var(--g200);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--g800);cursor:pointer;border:2px solid var(--g400)}
+        .badge-role{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600}
+        .role-BUYER{background:#dbeafe;color:#1d4ed8}
+        .role-SELLER{background:#dcfce7;color:#15803d}
+        .role-MANAGER{background:#fef3c7;color:#d97706}
+        .role-MASTER{background:#fce7f3;color:#be185d}
+
+        /* ── BUTTON SYSTEM ── */
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 20px;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;transition:all .15s;cursor:pointer}
+        .btn-primary{background:var(--g800);color:#fff}.btn-primary:hover{background:var(--g700)}
+        .btn-outline{background:#fff;color:var(--g800);border:1.5px solid var(--g800)}.btn-outline:hover{background:var(--g100)}
+        .btn-ghost{background:none;color:var(--neu500);border:1px solid var(--neu300)}.btn-ghost:hover{background:var(--neu100)}
+        .btn-danger{background:var(--red);color:#fff}.btn-danger:hover{opacity:.88}
+        .btn-accent{background:var(--acc);color:var(--neu900)}.btn-accent:hover{background:var(--accD)}
+        .btn-sm{padding:6px 14px;font-size:13px}
+        .btn-lg{padding:12px 28px;font-size:16px}
+        .btn:disabled{opacity:.45;cursor:not-allowed}
+
+        /* ── PAGES ── */
+        .page{display:none;min-height:calc(100vh - 60px)}
+        .page.active{display:block}
+        .container{max-width:1200px;margin:0 auto;padding:32px 24px}
+        .container-sm{max-width:520px;margin:0 auto;padding:32px 24px}
+
+        /* ── HOME ── */
+        .hero{background:linear-gradient(135deg,var(--g900) 0%,var(--g700) 100%);color:#fff;padding:64px 24px}
+        .hero-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:40px}
+        .hero-text h1{font-size:40px;font-weight:800;line-height:1.2;margin-bottom:14px}
+        .hero-text p{font-size:17px;opacity:.85;line-height:1.6;margin-bottom:28px}
+        .hero-badges{display:flex;gap:12px;flex-wrap:wrap}
+        .hero-badge{background:rgba(255,255,255,.15);padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600}
+        .hero-img{font-size:100px;flex-shrink:0}
+        .section-title{font-size:22px;font-weight:700;margin-bottom:6px}
+        .section-sub{font-size:14px;color:var(--neu500);margin-bottom:24px}
+
+        /* ── AUCTION CARDS ── */
+        .auction-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+        .auction-card{background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden;transition:all .2s;cursor:pointer}
+        .auction-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+        .card-thumb{height:160px;display:flex;align-items:center;justify-content:center;font-size:56px;position:relative}
+        .card-thumb.green{background:var(--g100)}
+        .card-thumb.yellow{background:#fffbeb}
+        .card-thumb.purple{background:#f5f3ff}
+        .card-status{position:absolute;top:10px;right:10px;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700}
+        .status-READY{background:#fef3c7;color:#d97706}
+        .status-PROGRESS{background:#dcfce7;color:#15803d}
+        .status-RESULT_PENDING{background:#ede9fe;color:#7c3aed}
+        .status-WON{background:#dbeafe;color:#1d4ed8}
+        .status-SUCCESS{background:#d1fae5;color:#065f46}
+        .status-FAIL{background:#f3f4f6;color:#6b7280}
+        .status-CANCELLED{background:var(--redL);color:var(--red)}
+        .card-body{padding:16px}
+        .card-name{font-size:15px;font-weight:700;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .card-seller{font-size:12px;color:var(--neu500);margin-bottom:10px}
+        .card-price{display:flex;align-items:baseline;gap:4px;margin-bottom:8px}
+        .price-label{font-size:11px;color:var(--neu500)}
+        .price-val{font-size:20px;font-weight:800;color:var(--g800)}
+        .price-unit{font-size:13px;color:var(--neu500)}
+        .card-meta{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--neu500);border-top:1px solid var(--neu200);padding-top:10px;margin-top:4px}
+        .timer{font-weight:600;color:var(--red)}
+
+        /* ── FILTER BAR ── */
+        .filter-bar{background:#fff;border-radius:var(--radius);padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:var(--shadow)}
+        .filter-bar select,.filter-bar input{padding:7px 12px;border:1px solid var(--neu300);border-radius:8px;font-size:13px;color:var(--neu900);background:#fff;outline:none}
+        .filter-bar select:focus,.filter-bar input:focus{border-color:var(--g600)}
+        .filter-label{font-size:13px;color:var(--neu500);font-weight:500}
+
+        /* ── AUCTION DETAIL ── */
+        .detail-layout{display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:start}
+        .detail-main{}
+        .detail-sidebar{position:sticky;top:80px}
+        .product-hero{background:#fff;border-radius:var(--radius-lg);padding:28px;margin-bottom:20px;box-shadow:var(--shadow)}
+        .product-emoji{font-size:80px;margin-bottom:16px;display:block}
+        .product-title{font-size:26px;font-weight:800;margin-bottom:6px}
+        .product-desc{font-size:15px;color:var(--neu500);line-height:1.7;margin-bottom:16px}
+        .product-meta-row{display:flex;gap:20px;flex-wrap:wrap}
+        .meta-item{display:flex;flex-direction:column;gap:2px}
+        .meta-label{font-size:11px;color:var(--neu500);font-weight:600;text-transform:uppercase;letter-spacing:0.05em}
+        .meta-val{font-size:14px;font-weight:600}
+
+        .bid-panel{background:#fff;border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow)}
+        .bid-panel-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+        .live-dot{width:8px;height:8px;background:var(--red);border-radius:50%;animation:pulse 1.4s infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+        .current-price{text-align:center;padding:20px;background:var(--g100);border-radius:var(--radius);margin-bottom:16px}
+        .cp-label{font-size:12px;color:var(--neu500);margin-bottom:4px}
+        .cp-val{font-size:36px;font-weight:800;color:var(--g800)}
+        .cp-unit{font-size:14px;color:var(--neu500)}
+        .bid-input-row{display:flex;gap:8px;margin-bottom:12px}
+        .bid-input{flex:1;padding:10px 14px;border:2px solid var(--neu300);border-radius:var(--radius);font-size:16px;font-weight:600;outline:none;text-align:right}
+        .bid-input:focus{border-color:var(--g600)}
+        .bid-presets{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+        .preset-btn{padding:6px;border:1px solid var(--neu300);background:#fff;border-radius:8px;font-size:12px;font-weight:600;color:var(--neu700);cursor:pointer;transition:all .15s}
+        .preset-btn:hover{border-color:var(--g600);color:var(--g800);background:var(--g100)}
+        .bid-history{background:var(--neu100);border-radius:var(--radius);padding:12px;max-height:200px;overflow-y:auto}
+        .bid-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--neu200);font-size:13px}
+        .bid-row:last-child{border-bottom:none}
+        .bid-row-price{font-weight:700;color:var(--g800)}
+        .bid-row-user{color:var(--neu500)}
+
+        /* ── TABS ── */
+        .tabs{display:flex;gap:2px;border-bottom:2px solid var(--neu200);margin-bottom:24px}
+        .tab{padding:10px 20px;border:none;background:none;font-size:14px;color:var(--neu500);font-weight:500;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+        .tab.active{color:var(--g800);font-weight:700;border-bottom-color:var(--g800)}
+        .tab-content{display:none}.tab-content.active{display:block}
+
+        /* ── CARDS ── */
+        .card{background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:22px}
+        .card+.card{margin-top:16px}
+        .card-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+
+        /* ── FORMS ── */
+        .form-group{margin-bottom:16px}
+        .form-group label{display:block;font-size:13px;font-weight:600;color:var(--neu700);margin-bottom:5px}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 13px;border:1.5px solid var(--neu300);border-radius:var(--radius);font-size:14px;color:var(--neu900);background:#fff;outline:none;transition:border .15s}
+        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--g600)}
+        .form-group textarea{resize:vertical;min-height:90px;line-height:1.6}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+        .form-hint{font-size:11px;color:var(--neu500);margin-top:4px}
+        .req{color:var(--red)}
+        .form-check{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:14px}
+        .form-check input[type=checkbox]{width:16px;height:16px;accent-color:var(--g700)}
+        .form-err{color:var(--red);font-size:12px;margin-top:4px}
+
+        /* ── AUTH PAGES ── */
+        .auth-wrap{min-height:calc(100vh - 60px);display:flex;align-items:center;justify-content:center;background:var(--g100);padding:24px}
+        .auth-card{background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:40px;width:100%;max-width:460px}
+        .auth-title{font-size:26px;font-weight:800;margin-bottom:4px}
+        .auth-sub{font-size:14px;color:var(--neu500);margin-bottom:28px}
+        .auth-divider{text-align:center;color:var(--neu500);font-size:13px;margin:16px 0;position:relative}
+        .auth-divider::before,.auth-divider::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--neu200)}
+        .auth-divider::before{left:0}.auth-divider::after{right:0}
+        .quick-login{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+        .ql-btn{padding:9px;border:1.5px solid var(--neu300);background:#fff;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;text-align:center}
+        .ql-btn:hover{border-color:var(--g700);color:var(--g800)}
+
+        /* ── MY PAGE ── */
+        .profile-header{background:#fff;border-radius:var(--radius-lg);padding:28px;margin-bottom:20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:20px}
+        .profile-avatar{width:72px;height:72px;border-radius:50%;background:var(--g200);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:var(--g800);flex-shrink:0}
+        .profile-name{font-size:22px;font-weight:800;margin-bottom:4px}
+        .profile-email{font-size:14px;color:var(--neu500);margin-bottom:8px}
+
+        /* ── ADMIN ── */
+        .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:28px}
+        .stat-card{background:#fff;border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow)}
+        .stat-label{font-size:12px;color:var(--neu500);font-weight:600;margin-bottom:4px}
+        .stat-val{font-size:32px;font-weight:800;color:var(--g800)}
+
+        /* ── TABLE ── */
+        .table-wrap{background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden}
+        table{width:100%;border-collapse:collapse}
+        th{background:var(--g100);padding:12px 16px;text-align:left;font-size:12px;font-weight:700;color:var(--g800);text-transform:uppercase;letter-spacing:.04em}
+        td{padding:12px 16px;font-size:14px;border-bottom:1px solid var(--neu200)}
+        tr:last-child td{border-bottom:none}
+        tr:hover td{background:var(--neu100)}
+
+        /* ── NOTIFICATIONS ── */
+        .noti-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--neu200)}
+        .noti-item:last-child{border-bottom:none}
+        .noti-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+        .noti-text{flex:1}
+        .noti-title{font-size:14px;font-weight:600;margin-bottom:2px}
+        .noti-time{font-size:12px;color:var(--neu500)}
+
+        /* ── AI CHAT ── */
+        .chat-layout{display:flex;gap:0;height:calc(100vh - 60px);overflow:hidden}
+        .chat-sidebar{width:260px;border-right:1px solid var(--neu200);background:#fff;display:flex;flex-direction:column;flex-shrink:0}
+        .chat-sidebar-header{padding:16px;border-bottom:1px solid var(--neu200);font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:space-between}
+        .chat-session-list{flex:1;overflow-y:auto}
+        .chat-session-item{padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--neu100);font-size:13px}
+        .chat-session-item:hover{background:var(--g100)}
+        .chat-session-item.active{background:var(--g100);border-left:3px solid var(--g700);font-weight:600}
+        .chat-main{flex:1;display:flex;flex-direction:column;background:var(--neu100)}
+        .chat-header{background:#fff;padding:14px 20px;border-bottom:1px solid var(--neu200);font-size:15px;font-weight:600}
+        .chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+        .msg{max-width:72%;display:flex;flex-direction:column;gap:4px}
+        .msg-user{align-self:flex-end;align-items:flex-end}
+        .msg-ai{align-self:flex-start;align-items:flex-start}
+        .msg-bubble{padding:11px 16px;border-radius:16px;font-size:14px;line-height:1.6}
+        .msg-user .msg-bubble{background:var(--g800);color:#fff;border-bottom-right-radius:4px}
+        .msg-ai .msg-bubble{background:#fff;color:var(--neu900);border-bottom-left-radius:4px;box-shadow:var(--shadow)}
+        .msg-time{font-size:11px;color:var(--neu500)}
+        .chat-input-area{background:#fff;border-top:1px solid var(--neu200);padding:14px 20px;display:flex;gap:10px}
+        .chat-input{flex:1;padding:10px 14px;border:1.5px solid var(--neu300);border-radius:24px;font-size:14px;outline:none;resize:none;max-height:100px;overflow-y:auto}
+        .chat-input:focus{border-color:var(--g600)}
+
+        /* ── MODAL ── */
+        .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
+        .modal-backdrop.open{display:flex}
+        .modal{background:#fff;border-radius:var(--radius-lg);padding:28px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+        .modal-title{font-size:18px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
+        .modal-close{background:none;border:none;font-size:22px;color:var(--neu500);cursor:pointer;line-height:1}
+
+        /* ── TOAST ── */
+        .toast-container{position:fixed;bottom:24px;right:24px;z-index:300;display:flex;flex-direction:column;gap:8px}
+        .toast{background:var(--neu900);color:#fff;padding:12px 18px;border-radius:var(--radius);font-size:14px;font-weight:500;box-shadow:var(--shadow-lg);animation:slideIn .25s ease;max-width:340px}
+        .toast.success{background:var(--g700)}
+        .toast.error{background:var(--red)}
+        @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:none;opacity:1}}
+
+        /* ── EMPTY STATE ── */
+        .empty{text-align:center;padding:60px 20px;color:var(--neu500)}
+        .empty-icon{font-size:48px;margin-bottom:12px}
+        .empty h3{font-size:16px;font-weight:600;margin-bottom:6px;color:var(--neu700)}
+
+        /* ── LOADING ── */
+        .loading{text-align:center;padding:40px;color:var(--neu500)}
+        .spinner{width:32px;height:32px;border:3px solid var(--neu200);border-top-color:var(--g700);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* ── RESPONSIVE ── */
+        @media(max-width:900px){
+            .detail-layout{grid-template-columns:1fr}
+            .detail-sidebar{position:static}
+            .hero-img{display:none}
+            .hero-text h1{font-size:28px}
+        }
+        @media(max-width:640px){
+            .form-row{grid-template-columns:1fr}
+            .auction-grid{grid-template-columns:1fr}
+            .chat-sidebar{display:none}
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+    <div class="hdr-inner">
+        <div class="logo" onclick="nav('home')">산지<span>직경</span></div>
+        <nav class="nav">
+            <button class="nav-btn active" id="nav-home" onclick="nav('home')">홈</button>
+            <button class="nav-btn" id="nav-auctions" onclick="nav('auctions')">경매 목록</button>
+            <button class="nav-btn" id="nav-products" onclick="nav('products')">상품</button>
+            <button class="nav-btn" id="nav-ai" onclick="nav('ai')">AI 상담</button>
+            <button class="nav-btn" id="nav-admin" onclick="nav('admin')" style="display:none">관리자</button>
+        </nav>
+        <div class="hdr-actions" id="hdr-actions">
+            <button class="btn btn-ghost btn-sm" onclick="nav('login')">로그인</button>
+            <button class="btn btn-primary btn-sm" onclick="nav('signup')">회원가입</button>
+        </div>
+    </div>
+</header>
+
+<!-- TOAST -->
+<div class="toast-container" id="toasts"></div>
+
+<!-- PAGE: HOME -->
+<div id="page-home" class="page active">
+    <div class="hero">
+        <div class="hero-inner">
+            <div class="hero-text">
+                <h1>산지에서 직접,<br>경매로 만나다</h1>
+                <p>전국 농산물 생산자와 구매자를 잇는<br>실시간 경매 플랫폼</p>
+                <div class="hero-badges">
+                    <span class="hero-badge">🔴 실시간 입찰</span>
+                    <span class="hero-badge">✅ 신선 농산물</span>
+                    <span class="hero-badge">🚚 산지 직송</span>
+                </div>
+            </div>
+            <div class="hero-img">🌾</div>
+        </div>
+    </div>
+    <div class="container">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div class="section-title">진행 중인 경매</div>
+            <button class="btn btn-outline btn-sm" onclick="nav('auctions')">전체 보기 →</button>
+        </div>
+        <div class="section-sub">지금 입찰 가능한 경매입니다</div>
+        <div id="home-auctions"><div class="loading"><div class="spinner"></div>불러오는 중...</div></div>
+    </div>
+</div>
+
+<!-- PAGE: AUCTIONS -->
+<div id="page-auctions" class="page">
+    <div class="container">
+        <div class="section-title">경매 목록</div>
+        <div class="section-sub">전체 경매를 검색하고 필터링하세요</div>
+        <div class="filter-bar">
+            <span class="filter-label">상태</span>
+            <select id="f-status" onchange="loadAuctions()">
+                <option value="">전체</option>
+                <option value="READY">대기중</option>
+                <option value="PROGRESS">진행중</option>
+                <option value="RESULT_PENDING">결과처리중</option>
+                <option value="WON">낙찰</option>
+                <option value="SUCCESS">거래완료</option>
+                <option value="FAIL">유찰</option>
+                <option value="CANCELLED">취소</option>
+            </select>
+            <button class="btn btn-primary btn-sm" id="create-auction-btn" style="display:none;margin-left:auto" onclick="openCreateAuctionModal()">+ 경매 등록</button>
+        </div>
+        <div id="auction-list"><div class="loading"><div class="spinner"></div>불러오는 중...</div></div>
+        <div style="margin-top:20px;display:flex;justify-content:center;gap:8px" id="auction-pagination"></div>
+    </div>
+</div>
+
+<!-- PAGE: PRODUCTS -->
+<div id="page-products" class="page">
+    <div class="container">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div class="section-title">상품 목록</div>
+            <button class="btn btn-primary btn-sm" id="create-product-btn" style="display:none" onclick="openCreateProductModal()">+ 상품 등록</button>
+        </div>
+        <div class="section-sub">등록된 농산물 상품 목록입니다</div>
+        <div id="product-list"><div class="loading"><div class="spinner"></div>불러오는 중...</div></div>
+    </div>
+</div>
+
+<!-- PAGE: AUCTION DETAIL -->
+<div id="page-auction-detail" class="page">
+    <div class="container">
+        <button class="btn btn-ghost btn-sm" onclick="nav('auctions')" style="margin-bottom:20px">← 목록으로</button>
+        <div class="detail-layout">
+            <div class="detail-main" id="auction-detail-main"></div>
+            <div class="detail-sidebar" id="auction-detail-sidebar"></div>
+        </div>
+    </div>
+</div>
+
+<!-- PAGE: LOGIN -->
+<div id="page-login" class="page">
+    <div class="auth-wrap">
+        <div class="auth-card">
+            <div class="auth-title">로그인</div>
+            <div class="auth-sub">산지직경에 오신 것을 환영합니다</div>
+            <div class="auth-divider">테스트 계정으로 빠른 로그인</div>
+            <div class="quick-login">
+                <div class="ql-btn" onclick="quickLogin('testbuyer')">🛒 Buyer<br><small style="color:#6b7280;font-weight:400">testbuyer</small></div>
+                <div class="ql-btn" onclick="quickLogin('testseller')">🌾 Seller<br><small style="color:#6b7280;font-weight:400">testseller</small></div>
+                <div class="ql-btn" onclick="quickLogin('testmanager')">📋 Manager<br><small style="color:#6b7280;font-weight:400">testmanager</small></div>
+                <div class="ql-btn" onclick="quickLogin('testmaster')">👑 Master<br><small style="color:#6b7280;font-weight:400">testmaster</small></div>
+            </div>
+            <div class="auth-divider">또는 직접 입력</div>
+            <div class="form-group">
+                <label>아이디</label>
+                <input id="login-id" placeholder="username" onkeydown="if(event.key==='Enter')doLogin()">
+            </div>
+            <div class="form-group">
+                <label>비밀번호</label>
+                <input id="login-pw" type="password" placeholder="password" onkeydown="if(event.key==='Enter')doLogin()">
+            </div>
+            <button class="btn btn-primary" style="width:100%;margin-bottom:14px" onclick="doLogin()">로그인</button>
+            <div style="text-align:center;font-size:14px;color:var(--neu500)">
+                계정이 없으신가요? <a style="color:var(--g800);font-weight:600;cursor:pointer" onclick="nav('signup')">회원가입</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PAGE: SIGNUP -->
+<div id="page-signup" class="page">
+    <div class="auth-wrap">
+        <div class="auth-card">
+            <div class="auth-title">회원가입</div>
+            <div class="auth-sub">구매자 또는 판매자로 가입하세요</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>아이디 <span class="req">*</span></label>
+                    <input id="su-id" placeholder="4~12자, 소문자+숫자">
+                    <div class="form-hint">예: farmer01</div>
+                </div>
+                <div class="form-group">
+                    <label>이름 <span class="req">*</span></label>
+                    <input id="su-name" placeholder="홍길동">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>이메일 <span class="req">*</span></label>
+                <input id="su-email" type="email" placeholder="email@example.com">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>전화번호</label>
+                    <input id="su-phone" placeholder="010-1234-5678">
+                </div>
+                <div class="form-group">
+                    <label>사업자번호 <span class="req">*</span></label>
+                    <input id="su-biz" placeholder="123-45-67890">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>비밀번호 <span class="req">*</span></label>
+                <input id="su-pw" type="password" placeholder="8~15자, 대소문자+숫자+특수문자">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Slack ID <span class="req">*</span></label>
+                    <input id="su-slack" placeholder="U01234567">
+                </div>
+                <div class="form-group">
+                    <label>역할 <span class="req">*</span></label>
+                    <select id="su-role">
+                        <option value="BUYER">구매자 (BUYER)</option>
+                        <option value="SELLER">판매자 (SELLER)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" id="su-notify" checked>
+                <label for="su-notify">알림 수신 동의</label>
+            </div>
+            <button class="btn btn-primary" style="width:100%;margin-bottom:14px" onclick="doSignup()">가입하기</button>
+            <div style="text-align:center;font-size:14px;color:var(--neu500)">
+                이미 계정이 있으신가요? <a style="color:var(--g800);font-weight:600;cursor:pointer" onclick="nav('login')">로그인</a>
+                &nbsp;·&nbsp; <a style="color:var(--neu500);font-weight:600;cursor:pointer" onclick="nav('admin-signup')">관리자 가입</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PAGE: ADMIN SIGNUP -->
+<div id="page-admin-signup" class="page">
+    <div class="container" style="max-width:480px">
+        <div class="card">
+            <div class="card-title">관리자 가입</div>
+            <div class="form-group"><label>아이디 <span class="req">*</span></label><input id="as-id" placeholder="영문, 숫자 4~20자"></div>
+            <div class="form-group"><label>이름 <span class="req">*</span></label><input id="as-name" placeholder="홍길동"></div>
+            <div class="form-group"><label>이메일 <span class="req">*</span></label><input id="as-email" type="email" placeholder="email@example.com"></div>
+            <div class="form-row">
+                <div class="form-group"><label>전화번호</label><input id="as-phone" placeholder="010-1234-5678"></div>
+                <div class="form-group">
+                    <label>역할 <span class="req">*</span></label>
+                    <select id="as-role">
+                        <option value="MANAGER">중간 관리자 (MANAGER)</option>
+                        <option value="MASTER">마스터 관리자 (MASTER)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group"><label>비밀번호 <span class="req">*</span></label><input id="as-pw" type="password" placeholder="8~15자, 대소문자+숫자+특수문자"></div>
+            <div class="form-group"><label>Slack ID <span class="req">*</span></label><input id="as-slack" placeholder="U01234567"></div>
+            <div class="form-group"><label>관리자 키 <span class="req">*</span></label><input id="as-key" type="password" placeholder="관리자 전용 키"></div>
+            <div class="form-check"><input type="checkbox" id="as-notify" checked><label for="as-notify">알림 수신 동의</label></div>
+            <button class="btn btn-primary" style="width:100%;margin-bottom:14px" onclick="doAdminSignup()">관리자 가입</button>
+            <div style="text-align:center;font-size:14px;color:var(--neu500)">
+                일반 가입으로 돌아가기 <a style="color:var(--g800);font-weight:600;cursor:pointer" onclick="nav('signup')">일반 가입</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PAGE: MY PAGE -->
+<div id="page-my" class="page">
+    <div class="container">
+        <div id="mypage-content"></div>
+    </div>
+</div>
+
+<!-- PAGE: ADMIN -->
+<div id="page-admin" class="page">
+    <div class="container">
+        <div class="section-title">관리자 대시보드</div>
+        <div class="section-sub">회원 관리 및 경매 운영</div>
+        <div class="tabs" id="admin-tabs">
+            <button class="tab active" onclick="adminTab('users',this)">회원 관리</button>
+            <button class="tab" onclick="adminTab('products-mgmt',this)">상품 관리</button>
+            <button class="tab" onclick="adminTab('auctions-mgmt',this)">경매 관리</button>
+            <button class="tab" onclick="adminTab('ai-docs',this)">AI 문서</button>
+        </div>
+        <div id="admin-tab-users" class="tab-content active"><div class="loading"><div class="spinner"></div>불러오는 중...</div></div>
+        <div id="admin-tab-products-mgmt" class="tab-content"></div>
+        <div id="admin-tab-auctions-mgmt" class="tab-content"></div>
+        <div id="admin-tab-ai-docs" class="tab-content"></div>
+    </div>
+</div>
+
+<!-- PAGE: AI CHAT -->
+<div id="page-ai" class="page" style="padding:0">
+    <div class="chat-layout">
+        <div class="chat-sidebar">
+            <div class="chat-sidebar-header">
+                AI 상담
+                <button class="btn btn-primary btn-sm" onclick="createChatSession()">+ 새 대화</button>
+            </div>
+            <div class="chat-session-list" id="chat-session-list">
+                <div style="padding:20px;text-align:center;color:var(--neu500);font-size:13px">로그인 후 이용 가능합니다</div>
+            </div>
+        </div>
+        <div class="chat-main">
+            <div class="chat-header" id="chat-header">AI 농산물 상담사</div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="msg msg-ai">
+                    <div class="msg-bubble">안녕하세요! 산지직경 AI 상담사입니다. 🌾<br>농산물 경매에 대해 궁금한 점을 물어보세요.</div>
+                    <div class="msg-time">지금</div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <textarea class="chat-input" id="chat-input" placeholder="메시지를 입력하세요..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+                <button class="btn btn-primary" onclick="sendChat()">전송</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-backdrop" id="modal-create-product">
+    <div class="modal">
+        <div class="modal-title">상품 등록 <button class="modal-close" onclick="closeModal('create-product')">×</button></div>
+        <div class="form-group"><label>상품명 <span class="req">*</span></label><input id="cp-name" placeholder="유기농 사과 10kg"></div>
+        <div class="form-group"><label>수량 <span class="req">*</span></label><input id="cp-qty" placeholder="10박스"></div>
+        <div class="form-group"><label>상품 설명 <span class="req">*</span></label><textarea id="cp-desc" placeholder="상품에 대한 자세한 설명"></textarea></div>
+        <button class="btn btn-primary" style="width:100%" onclick="doCreateProduct()">등록하기</button>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="modal-create-auction">
+    <div class="modal">
+        <div class="modal-title">경매 등록 <button class="modal-close" onclick="closeModal('create-auction')">×</button></div>
+        <div class="form-group"><label>상품 ID (UUID) <span class="req">*</span></label><input id="ca-pid" placeholder="상품 UUID"></div>
+        <div class="form-row">
+            <div class="form-group"><label>시작가 <span class="req">*</span></label><input id="ca-sp" type="number" placeholder="10000" min="1"></div>
+            <div class="form-group"><label>입찰 단위 <span class="req">*</span></label><input id="ca-bu" type="number" placeholder="1000" min="1"></div>
+        </div>
+        <div class="form-group">
+            <label>시작 시각 <span class="req">*</span></label>
+            <input id="ca-at" type="datetime-local">
+        </div>
+        <button class="btn btn-primary" style="width:100%" onclick="doCreateAuction()">경매 등록</button>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="modal-product-detail">
+    <div class="modal" style="max-width:480px;width:90%">
+        <div class="modal-title">상품 상세 <button class="modal-close" onclick="closeModal('product-detail')">×</button></div>
+        <div id="product-detail-content"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="modal-user-detail">
+    <div class="modal">
+        <div class="modal-title" id="user-detail-title">회원 상세 <button class="modal-close" onclick="closeModal('user-detail')">×</button></div>
+        <div id="user-detail-content"></div>
+    </div>
+</div>
+
+<!-- 보증금 납부 모달 -->
+<div class="modal-backdrop" id="modal-deposit">
+    <div class="modal" style="max-width:420px">
+        <div class="modal-title">💳 보증금 납부 <button class="modal-close" onclick="closeModal('deposit')">×</button></div>
+        <div id="deposit-modal-content">
+            <div class="form-group" style="margin-bottom:16px">
+                <label>납부 금액</label>
+                <div id="deposit-amount-label" style="font-size:22px;font-weight:800;color:var(--g800);padding:8px 0"></div>
+            </div>
+            <p style="font-size:13px;color:var(--neu500);margin-bottom:20px">보증금 납부 후 경매에 참여할 수 있습니다. Toss Payments로 결제됩니다.</p>
+            <div id="deposit-toss-section">
+                <button class="btn btn-primary" style="width:100%" onclick="initiateDepositPayment()">토스로 결제하기</button>
+            </div>
+            <div id="deposit-confirm-section" style="display:none">
+                <div class="form-group"><label>paymentKey <span class="req">*</span></label><input id="dep-payment-key" placeholder="Toss 결제 완료 후 받은 paymentKey"></div>
+                <div class="form-group"><label>tossOrderId <span class="req">*</span></label><input id="dep-toss-order-id" placeholder="Toss orderId" readonly></div>
+                <button class="btn btn-primary" style="width:100%" onclick="confirmDepositPayment()">결제 승인</button>
+                <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px" onclick="document.getElementById('deposit-toss-section').style.display='';document.getElementById('deposit-confirm-section').style.display='none'">← 돌아가기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 결제 상세 모달 -->
+<div class="modal-backdrop" id="modal-payment-detail">
+    <div class="modal" style="max-width:460px">
+        <div class="modal-title">결제 상세 <button class="modal-close" onclick="closeModal('payment-detail')">×</button></div>
+        <div id="payment-detail-content"></div>
+    </div>
+</div>
+
+<script>
+    const GW='http://localhost:8000';
+
+    // JWT payload를 디코딩해서 claims 반환
+    function parseJwt(token){
+        try{
+            const payload=token.split('.')[1];
+            return JSON.parse(atob(payload.replace(/-/g,'+').replace(/_/g,'/')));
+        }catch{return null;}
+    }
+    let state={token:'',userId:'',userName:'',userRole:'',chatSessionId:null,currentAuctionId:null,currentAuctionPrice:0,chatSessions:[],stompClient:null};
+
+    // Load from storage
+    (()=>{
+        const t=localStorage.getItem('sjk_tok'),u=localStorage.getItem('sjk_uid'),r=localStorage.getItem('sjk_role'),n=localStorage.getItem('sjk_name');
+        if(t){state.token=t;state.userId=u||'';state.userRole=r||'';state.userName=n||'';}
+        updateHeader();
+    })();
+
+    /* ── UTILS ── */
+    function toast(msg,type=''){
+        const el=document.createElement('div');
+        el.className='toast'+(type?' '+type:'');el.textContent=msg;
+        document.getElementById('toasts').appendChild(el);
+        setTimeout(()=>el.remove(),3000);
+    }
+    function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+    function fmtNum(n){return Number(n).toLocaleString('ko-KR');}
+    function fmtDate(s){if(!s)return'-';return new Date(s).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}
+    function emoji(name){
+        const m={'사과':'🍎','배':'🍐','포도':'🍇','딸기':'🍓','감':'🫐','수박':'🍉','참외':'🍈','복숭아':'🍑','망고':'🥭','바나나':'🍌','오렌지':'🍊','키위':'🥝','토마토':'🍅','당근':'🥕','양파':'🧅','마늘':'🧄','고구마':'🍠','감자':'🥔','배추':'🥬','상추':'🥗','호박':'🎃','오이':'🥒','파프리카':'🫑','콩':'🫘','쌀':'🌾','옥수수':'🌽'};
+        for(const k in m)if((name||'').includes(k))return m[k];
+        return['🌾','🍋','🥦','🫚','🌿','🌱'][Math.floor(Math.random()*6)];
+    }
+    function bgClass(name){const cls=['green','yellow','purple'];return cls[Math.abs(name.charCodeAt(0))%3];}
+
+    /* ── API ── */
+    async function api(method,path,body){
+        const h={'Content-Type':'application/json'};
+        if(state.token)h['Authorization']='Bearer '+state.token;
+        const opts={method,headers:h};
+        if(body!==undefined)opts.body=JSON.stringify(body);
+        const res=await fetch(GW+path,opts);
+        const txt=await res.text();
+        let data;try{data=JSON.parse(txt);}catch{data=txt;}
+        return{ok:res.ok,status:res.status,data};
+    }
+
+    /* ── NAVIGATION ── */
+    function nav(page,param){
+        document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+        const el=document.getElementById('nav-'+page);if(el)el.classList.add('active');
+        if(page==='home'){document.getElementById('page-home').classList.add('active');loadHomeAuctions();}
+        else if(page==='auctions'){document.getElementById('page-auctions').classList.add('active');loadAuctions();}
+        else if(page==='products'){document.getElementById('page-products').classList.add('active');loadProducts();}
+        else if(page==='auction-detail'){document.getElementById('page-auction-detail').classList.add('active');loadAuctionDetail(param);}
+        else if(page==='login'){document.getElementById('page-login').classList.add('active');}
+        else if(page==='signup'){document.getElementById('page-signup').classList.add('active');}
+        else if(page==='admin-signup'){document.getElementById('page-admin-signup').classList.add('active');}
+        else if(page==='my'){document.getElementById('page-my').classList.add('active');loadMyPage();}
+        else if(page==='admin'){document.getElementById('page-admin').classList.add('active');loadAdminUsers();}
+        else if(page==='ai'){document.getElementById('page-ai').classList.add('active');loadChatSessions();}
+    }
+
+    function updateHeader(){
+        const actions=document.getElementById('hdr-actions');
+        if(state.token){
+            const initials=(state.userName||'U').substring(0,1).toUpperCase();
+            actions.innerHTML=`
+      <span class="badge-role role-${esc(state.userRole)}">${esc(state.userRole)}</span>
+      <div class="avatar" onclick="nav('my')" title="마이페이지">${initials}</div>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">로그아웃</button>`;
+            // Show admin nav for MASTER/MANAGER
+            document.getElementById('nav-admin').style.display=(state.userRole==='MASTER'||state.userRole==='MANAGER')?'':'none';
+            // Show create buttons for SELLER/MASTER
+            ['create-auction-btn','create-product-btn'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(state.userRole==='SELLER'||state.userRole==='MASTER')?'':'none';});
+        }else{
+            actions.innerHTML=`<button class="btn btn-ghost btn-sm" onclick="nav('login')">로그인</button><button class="btn btn-primary btn-sm" onclick="nav('signup')">회원가입</button>`;
+            document.getElementById('nav-admin').style.display='none';
+        }
+    }
+
+    function doLogout(){state.token='';state.userId='';state.userRole='';state.userName='';localStorage.clear();updateHeader();nav('home');toast('로그아웃 되었습니다.');}
+
+    /* ── AUTH ── */
+    async function quickLogin(u){document.getElementById('login-id').value=u;document.getElementById('login-pw').value='Test1234!';await doLogin();}
+
+    async function doLogin(){
+        const username=document.getElementById('login-id').value.trim(),password=document.getElementById('login-pw').value;
+        if(!username||!password)return toast('아이디와 비밀번호를 입력하세요.','error');
+        const r=await api('POST','/api/v1/auth/login',{username,password});
+        if(r.ok){
+            const d=r.data?.data||r.data;
+            state.token=d.accessToken||d.token||'';
+            // JWT payload 디코딩해서 role/userId/name 추출 (서버가 응답에 안 담아줘서)
+            const claims=parseJwt(state.token);
+            state.userId=claims?.sub||d.userId||'';
+            state.userRole=claims?.role||d.role||'';
+            state.userName=claims?.preferred_username||d.name||d.username||username;
+            localStorage.setItem('sjk_tok',state.token);
+            localStorage.setItem('sjk_uid',state.userId);
+            localStorage.setItem('sjk_role',state.userRole);
+            localStorage.setItem('sjk_name',state.userName);
+            updateHeader();
+            toast('로그인 성공! 환영합니다 '+state.userName,'success');
+            nav('home');
+        }else{toast('로그인 실패: '+(r.data?.message||r.data?.data?.message||'아이디/비밀번호를 확인하세요.'),'error');}
+    }
+
+    async function doAdminSignup(){
+        const b={
+            username:document.getElementById('as-id').value.trim(),
+            name:document.getElementById('as-name').value.trim(),
+            email:document.getElementById('as-email').value.trim(),
+            phone:document.getElementById('as-phone').value.trim(),
+            password:document.getElementById('as-pw').value,
+            slackId:document.getElementById('as-slack').value.trim(),
+            notificationAllow:document.getElementById('as-notify').checked,
+            role:document.getElementById('as-role').value,
+            adminKey:document.getElementById('as-key').value
+        };
+        const r=await api('POST','/api/v1/auth/admin/signup',b);
+        if(r.ok){toast('관리자 가입이 완료되었습니다. 로그인해주세요.','success');nav('login');}
+        else toast('가입 실패: '+(r.data?.message||r.data?.data?.message||'입력값을 확인하세요.'),'error');
+    }
+
+    async function doSignup(){
+        const ph=document.getElementById('su-phone').value.trim();
+        const b={username:document.getElementById('su-id').value.trim(),name:document.getElementById('su-name').value.trim(),email:document.getElementById('su-email').value.trim(),password:document.getElementById('su-pw').value,businessNumber:document.getElementById('su-biz').value.trim(),slackId:document.getElementById('su-slack').value.trim(),notificationAllow:document.getElementById('su-notify').checked,role:document.getElementById('su-role').value};
+        if(ph)b.phone=ph;
+        const r=await api('POST','/api/v1/auth/signup',b);
+        if(r.ok){toast('회원가입 완료! 로그인해주세요.','success');nav('login');}
+        else{toast('가입 실패: '+(r.data?.message||r.data?.data?.message||JSON.stringify(r.data?.errors||r.data)),'error');}
+    }
+
+    /* ── AUCTIONS ── */
+    let auctionPage=0,auctionStatus='';
+    async function loadHomeAuctions(){
+        const el=document.getElementById('home-auctions');
+        el.innerHTML='<div class="loading"><div class="spinner"></div>불러오는 중...</div>';
+        const r=await api('GET','/api/v1/auctions?status=PROGRESS&page=0&size=6');
+        if(r.ok){const items=r.data?.data?.content||[];el.innerHTML=items.length?`<div class="auction-grid">${items.map(auctionCard).join('')}</div>`:'<div class="empty"><div class="empty-icon">🏷️</div><h3>진행 중인 경매가 없습니다</h3></div>';}
+        else el.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><h3>불러오기 실패</h3></div>';
+    }
+    async function loadAuctions(){
+        const el=document.getElementById('auction-list');
+        el.innerHTML='<div class="loading"><div class="spinner"></div>불러오는 중...</div>';
+        const status=document.getElementById('f-status').value;
+        const q=status?`&status=${status}`:'';
+        const r=await api('GET',`/api/v1/auctions?page=${auctionPage}&size=12${q}`);
+        if(r.ok){
+            const items=r.data?.data?.content||[];
+            const total=r.data?.data?.totalPages||1;
+            el.innerHTML=items.length?`<div class="auction-grid">${items.map(auctionCard).join('')}</div>`:'<div class="empty"><div class="empty-icon">🏷️</div><h3>경매가 없습니다</h3></div>';
+            renderPagination(auctionPage,total,'auction');
+        }else el.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><h3>불러오기 실패</h3></div>';
+    }
+    function auctionCard(a){
+        const em=emoji(a.product?.name||a.productName||a.title||'');
+        const bc=bgClass(a.product?.name||a.productName||a.title||'a');
+        return`<div class="auction-card" onclick="nav('auction-detail','${a.id||a.auctionId}')">
+    <div class="card-thumb ${bc}">${em}<span class="card-status status-${a.status||'READY'}">${statusLabel(a.status)}</span></div>
+    <div class="card-body">
+      <div class="card-name">${esc(a.product?.name||a.productName||a.title||'상품명 미등록')}</div>
+      <div class="card-seller" style="cursor:pointer" onclick="event.stopPropagation();copyText('${a.sellerId||''}','판매자 ID')" title="클릭하여 복사">판매자 ID: ${esc((a.sellerId||'').toString())}</div>
+      <div class="card-price"><span class="price-label">시작가</span><span class="price-val">${fmtNum(a.startPrice||a.currentPrice||0)}</span><span class="price-unit">원</span></div>
+      <div class="card-meta"><span>입찰단위 ${fmtNum(a.bidUnit||0)}원</span><span class="${a.status==='PROGRESS'?'timer':''}">${a.startAt?fmtDate(a.startAt):'-'}</span></div>
+    </div>
+  </div>`;
+    }
+    function statusLabel(s){return{READY:'대기중',PROGRESS:'진행중',RESULT_PENDING:'결과처리중',WON:'낙찰',SUCCESS:'거래완료',FAIL:'유찰',CANCELLED:'취소'}[s]||s||'-';}
+
+    /* ── PRODUCTS ── */
+    async function showProductDetail(id){
+        document.getElementById('modal-product-detail').classList.add('open');
+        const el=document.getElementById('product-detail-content');
+        el.innerHTML='<div class="loading"><div class="spinner"></div></div>';
+        const r=await api('GET',`/api/v1/products/${id}`);
+        if(!r.ok){el.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><h3>불러오기 실패</h3></div>';return;}
+        const p=r.data?.data||r.data;
+        const em=emoji(p.name||'');const bc=bgClass(p.name||'p');
+        el.innerHTML=`
+    <div style="text-align:center;padding:24px 0;background:var(--g100);border-radius:var(--radius-lg);margin-bottom:20px;font-size:64px">${em}</div>
+    <div style="font-size:20px;font-weight:800;margin-bottom:8px">${esc(p.name||'-')}</div>
+    <div style="font-size:14px;color:var(--neu500);margin-bottom:16px">${esc(p.description||'설명 없음')}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="card" style="padding:14px;text-align:center">
+        <div style="font-size:12px;color:var(--neu500);margin-bottom:4px">수량</div>
+        <div style="font-size:18px;font-weight:700">${esc(String(p.quantity||'-'))}</div>
+      </div>
+      <div class="card" style="padding:14px;text-align:center">
+        <div style="font-size:12px;color:var(--neu500);margin-bottom:4px">판매자 ID</div>
+        <div style="font-size:11px;font-family:monospace;cursor:pointer;word-break:break-all" onclick="copyText('${p.sellerId||p.userId||''}','판매자 ID')" title="클릭하여 복사">${esc((p.sellerId||p.userId||'-').toString())}</div>
+      </div>
+    </div>
+    <div class="card" style="padding:12px 14px;background:var(--neu100);display:flex;justify-content:space-between;align-items:center">
+      <div><span style="font-size:11px;color:var(--neu500)">상품 ID: </span><span style="font-size:11px;font-family:monospace;cursor:pointer" onclick="copyText('${p.id||p.productId||''}','상품 ID')" title="클릭하여 복사">${esc((p.id||p.productId||'-').toString())}</span></div>
+      ${(state.userRole==='MASTER'||state.userRole==='MANAGER'||(state.userRole==='SELLER'&&(p.sellerId||p.userId)?.toString()===state.userId))?`<button class="btn btn-danger btn-sm" onclick="adminDeleteProduct('${p.id||p.productId}');closeModal('product-detail')">삭제</button>`:''}
+    </div>`;
+    }
+
+    async function loadProducts(){
+        const el=document.getElementById('product-list');
+        el.innerHTML='<div class="loading"><div class="spinner"></div>불러오는 중...</div>';
+        const r=await api('GET','/api/v1/products?page=0&size=20');
+        if(r.ok){
+            const items=r.data?.data?.content||[];
+            el.innerHTML=items.length?`<div class="auction-grid">${items.map(productCard).join('')}</div>`:'<div class="empty"><div class="empty-icon">📦</div><h3>등록된 상품이 없습니다</h3></div>';
+        }else el.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><h3>불러오기 실패</h3></div>';
+    }
+    function productCard(p){
+        const em=emoji(p.name||'');const bc=bgClass(p.name||'p');
+        return`<div class="auction-card" onclick="showProductDetail('${p.id||p.productId}')" style="cursor:pointer">
+    <div class="card-thumb ${bc}">${em}</div>
+    <div class="card-body">
+      <div class="card-name">${esc(p.name||'-')}</div>
+      <div class="card-seller">수량: ${esc(p.quantity||'-')}</div>
+      <div class="card-seller" style="font-size:13px;color:var(--neu700);margin-top:6px">${esc((p.description||'').substring(0,50))}${(p.description||'').length>50?'...':''}</div>
+      <div class="card-meta" style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;color:var(--neu400);cursor:pointer" onclick="event.stopPropagation();copyText('${p.id||p.productId||''}','상품 ID')" title="클릭하여 복사">ID: ${esc((p.id||p.productId||'').toString())}</span>
+        ${(state.userRole==='MASTER'||state.userRole==='MANAGER'||(state.userRole==='SELLER'&&(p.sellerId||p.userId)?.toString()===state.userId))?`<button class="btn btn-danger btn-sm" style="font-size:11px;padding:3px 8px" onclick="event.stopPropagation();adminDeleteProduct('${p.id||p.productId}')">삭제</button>`:''}
+      </div>
+    </div>
+  </div>`;
+    }
+
+    /* ── AUCTION DETAIL ── */
+    async function loadAuctionDetail(id){
+        state.currentAuctionId=id;
+        const main=document.getElementById('auction-detail-main'),sidebar=document.getElementById('auction-detail-sidebar');
+        main.innerHTML='<div class="loading"><div class="spinner"></div>불러오는 중...</div>';
+        sidebar.innerHTML='';
+        const r=await api('GET',`/api/v1/auctions/${id}`);
+        if(!r.ok){main.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><h3>경매를 불러올 수 없습니다</h3></div>';return;}
+        const a=r.data?.data||r.data;
+        const em=emoji(a.product?.name||a.productName||'');
+        main.innerHTML=`
+    <div class="product-hero">
+      <span class="product-emoji">${em}</span>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+        <div>
+          <div class="product-title">${esc(a.product?.name||a.productName||'-')}</div>
+          <span class="card-status status-${a.status||'READY'}" style="position:static;display:inline-block;margin-top:6px">${statusLabel(a.status)}</span>
+        </div>
+      </div>
+      <div class="product-desc">${esc(a.product?.description||a.productDescription||a.description||'상품 설명이 없습니다.')}</div>
+      <div class="product-meta-row">
+        <div class="meta-item"><div class="meta-label">수량</div><div class="meta-val">${esc(a.product?.quantity||a.productQuantity||a.quantity||'-')}</div></div>
+        <div class="meta-item"><div class="meta-label">입찰 단위</div><div class="meta-val">${fmtNum(a.bidUnit||0)}원</div></div>
+        <div class="meta-item"><div class="meta-label">경매 시작</div><div class="meta-val">${fmtDate(a.startAt)}</div></div>
+        <div class="meta-item"><div class="meta-label">경매 ID</div><div class="meta-val" style="font-size:11px;font-family:monospace;cursor:pointer;word-break:break-all" onclick="copyText('${esc(id||'')}','경매 ID')" title="클릭하여 복사">${esc(id||'-')}</div></div>
+        <div class="meta-item"><div class="meta-label">상품 ID</div><div class="meta-val" style="font-size:11px;font-family:monospace;cursor:pointer;word-break:break-all" onclick="copyText('${a.product?.productId||a.productId||''}','상품 ID')" title="클릭하여 복사">${esc((a.product?.productId||a.productId||'-').toString())}</div></div>
+      </div>
+    </div>
+    ${(state.userRole==='MASTER'||state.userRole==='MANAGER'||state.userRole==='SELLER')?adminAuctionControls(a):''}`;
+        sidebar.innerHTML=buildBidPanel(a);
+        if(a.status==='PROGRESS'){connectBid(id);syncCurrentPrice(id);}
+    }
+
+    function buildBidPanel(a){
+        const price=a.currentPrice||a.startPrice||0;
+        state.currentAuctionPrice=price;
+        const isActive=a.status==='PROGRESS';
+        return`<div class="bid-panel">
+    <div class="bid-panel-title">${isActive?'<span class="live-dot"></span>':''}실시간 입찰</div>
+    <div class="current-price">
+      <div class="cp-label">현재 최고가</div>
+      <div class="cp-val" id="current-price-val">${fmtNum(price)}</div>
+      <div class="cp-unit">원</div>
+    </div>
+    ${isActive&&state.token?`
+    <div class="bid-input-row">
+      <input class="bid-input" id="bid-amount" type="number" value="${price+(a.bidUnit||1000)}" min="${price+1}">
+      <span style="align-self:center;font-size:14px;color:var(--neu500)">원</span>
+    </div>
+    <div class="bid-presets">
+      ${[1,2,5,10].map(m=>`<button class="preset-btn" onclick="addBid(${(a.bidUnit||1000)*m})">+${fmtNum((a.bidUnit||1000)*m)}</button>`).join('')}
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:14px" onclick="placeBid()">입찰하기</button>`:''}
+    ${!isActive?`<div style="text-align:center;padding:12px;color:var(--neu500);font-size:14px">${statusLabel(a.status)} 상태입니다</div>`:''}
+    ${!state.token?`<button class="btn btn-outline" style="width:100%;margin-bottom:14px" onclick="nav('login')">로그인 후 입찰</button>`:''}
+    ${isActive&&state.token&&state.userRole==='BUYER'?`<button class="btn btn-accent" style="width:100%;margin-bottom:8px" onclick="openDepositModal('${a.id||a.auctionId}',${a.depositAmount||0})">💳 보증금 납부 (${fmtNum(a.depositAmount||0)}원)</button>`:''}
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--neu700)">최근 입찰 현황</div>
+    <div class="bid-history" id="bid-history"><div style="text-align:center;padding:12px;color:var(--neu500);font-size:13px">입찰 내역이 없습니다</div></div>
+  </div>`;
+    }
+
+    function adminAuctionControls(a){
+        const isAdmin=state.userRole==='MASTER'||state.userRole==='MANAGER';
+        const canCancel=isAdmin||(state.userRole==='SELLER'&&(a.sellerId||'').toString()===state.userId);
+        return`<div class="card" style="margin-top:16px">
+    <div class="card-title">${isAdmin?'관리자 제어':'경매 제어'}</div>
+    <div class="br" style="gap:8px;flex-wrap:wrap">
+      ${isAdmin&&a.status==='READY'?`<button class="btn btn-primary btn-sm" onclick="adminStartAuction('${a.id||a.auctionId}')">강제 시작</button>`:''}
+      ${isAdmin&&a.status==='PROGRESS'?`<button class="btn btn-accent btn-sm" onclick="adminCloseAuction('${a.id||a.auctionId}')">강제 마감</button>`:''}
+      ${canCancel&&(a.status==='READY'||a.status==='PROGRESS')?`<button class="btn btn-danger btn-sm" onclick="adminCancelAuction('${a.id||a.auctionId}')">경매 취소</button>`:''}
+    </div>
+  </div>`;
+    }
+
+    function addBid(v){const el=document.getElementById('bid-amount');if(el)el.value=parseInt(el.value||0)+v;}
+
+    /* ── BID WEBSOCKET ── */
+    function connectBid(auctionId){
+        if(typeof SockJS==='undefined'){toast('SockJS 라이브러리 로딩 실패','error');return;}
+        if(state.stompClient){try{state.stompClient.deactivate();}catch(e){}state.stompClient=null;}
+        const StompClient=(typeof StompJs!=='undefined')?StompJs.Client:window.StompJs?.Client;
+        if(!StompClient){toast('STOMP 라이브러리 로딩 실패','error');return;}
+        const connectHeaders={'X-User-Id':state.userId};
+        if(state.userRole)connectHeaders['X-User-Role']=state.userRole;
+        if(state.token)connectHeaders['Authorization']='Bearer '+state.token;
+        // native WebSocket URL (ws:// or wss://)
+        const wsUrl=GW.replace(/^http/,'ws')+'/ws/bid-native';
+        const client=new StompClient({
+            brokerURL:wsUrl,
+            connectHeaders,
+            reconnectDelay:0,
+            debug:()=>{},
+            onConnect:()=>{
+                state.stompClient=client;
+                toast('실시간 입찰 연결됨','success');
+                // 입찰 실패 오류 구독
+                client.subscribe('/user/queue/errors',msg=>{
+                    try{
+                        const d=JSON.parse(msg.body);
+                        toast('입찰 실패: '+(d.message||d.code||'오류'),'error');
+                        // 가격 불일치 오류 시 현재가 재조회
+                        if(d.code==='BID-004'||d.message?.includes('변경')){
+                            syncCurrentPrice(state.currentAuctionId);
+                        }
+                    }catch(e){}
+                });
+                client.subscribe('/topic/auction/'+auctionId,msg=>{
+                    try{
+                        const d=JSON.parse(msg.body);
+                        const price=d.currentPrice||d.bidPrice||d.price;
+                        if(price){
+                            state.currentAuctionPrice=price;
+                            const el=document.getElementById('current-price-val');
+                            if(el){el.textContent=fmtNum(price);el.style.color='var(--red)';setTimeout(()=>{if(el)el.style.color='';},800);}
+                        }
+                        const hist=document.getElementById('bid-history');
+                        if(hist){
+                            const row=`<div class="bid-row"><span class="bid-row-price">${fmtNum(price||0)}원</span><span class="bid-row-user">${fmtDate(d.createdAt||new Date().toISOString())}</span></div>`;
+                            if(hist.querySelector('div[style]'))hist.innerHTML='';
+                            hist.insertAdjacentHTML('afterbegin',row);
+                        }
+                    }catch(e){}
+                });
+            },
+            onStompError:(frame)=>{
+                toast('STOMP 오류: '+(frame.headers?.message||frame.body||'알 수 없는 오류'),'error');
+                console.error('STOMP error',frame);
+            },
+            onDisconnect:()=>{state.stompClient=null;},
+            onWebSocketError:(e)=>{toast('WebSocket 연결 실패','error');console.error('WS error',e);}
+        });
+        client.activate();
+    }
+
+    async function syncCurrentPrice(auctionId){
+        if(!auctionId)return;
+        const r=await api('GET',`/api/v1/bids/auctions/${auctionId}/highest`);
+        if(r.ok){
+            const d=r.data?.data||r.data;
+            const cp=d?.finalPrice||d?.currentPrice;
+            if(cp){
+                state.currentAuctionPrice=cp;
+                const el=document.getElementById('current-price-val');
+                if(el){el.textContent=fmtNum(cp);el.style.color='var(--g600)';}
+                // bidUnit은 buildBidPanel에서 세팅된 값 활용
+                const input=document.getElementById('bid-amount');
+                if(input)input.value=cp+1000;
+                toast('현재가 동기화: '+fmtNum(cp)+'원','success');
+            }
+        }
+    }
+
+    function copyText(text,label){
+        if(!text)return;
+        navigator.clipboard.writeText(text).then(()=>toast(label+' 복사됨','success')).catch(()=>{
+            const el=document.createElement('textarea');el.value=text;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);toast(label+' 복사됨','success');
+        });
+    }
+
+    async function placeBid(){
+        if(!state.token)return toast('로그인이 필요합니다.','error');
+        if(!state.stompClient){toast('WebSocket에 연결되지 않았습니다.','error');return;}
+        const amt=parseInt(document.getElementById('bid-amount').value);
+        const payload={bidPrice:amt,clientSeenPrice:state.currentAuctionPrice,actionType:'BID'};
+        state.stompClient.publish({
+            destination:`/app/auction/${state.currentAuctionId}/bid`,
+            headers:{'X-User-Id':state.userId},
+            body:JSON.stringify(payload)
+        });
+        toast('입찰 요청 전송됨','success');
+    }
+
+    /* ── ADMIN AUCTION CONTROLS ── */
+    async function adminStartAuction(id){
+        const r=await api('POST',`/api/v1/auctions/${id}/start`);
+        if(r.ok){toast('경매를 시작했습니다.','success');loadAuctionDetail(id);}else toast('실패: '+(r.data?.message||''),'error');
+    }
+    async function adminCloseAuction(id){
+        if(!confirm('경매를 강제 마감하시겠습니까?'))return;
+        const r=await api('POST',`/api/v1/auctions/${id}/close`,{});
+        if(r.ok){toast('경매가 마감되었습니다.','success');loadAuctionDetail(id);}else toast('실패: '+(r.data?.message||''),'error');
+    }
+    async function adminCancelAuction(id){
+        const reason=prompt('취소 사유를 입력하세요:');if(!reason)return;
+        const r=await api('POST',`/api/v1/auctions/${id}/cancel`,{reason});
+        if(r.ok){toast('경매가 취소되었습니다.','success');loadAuctionDetail(id);}else toast('실패: '+(r.data?.message||''),'error');
+    }
+
+    /* ── PAGINATION ── */
+    function renderPagination(current,total,prefix){
+        const el=document.getElementById(prefix+'-pagination');if(!el)return;
+        if(total<=1){el.innerHTML='';return;}
+        let html='';
+        for(let i=Math.max(0,current-2);i<Math.min(total,current+3);i++){
+            html+=`<button class="btn ${i===current?'btn-primary':'btn-ghost'} btn-sm" onclick="gotoPage(${i},'${prefix}')">${i+1}</button>`;
+        }
+        el.innerHTML=html;
+    }
+    function gotoPage(p,prefix){if(prefix==='auction'){auctionPage=p;loadAuctions();}}
+
+    /* ── MY PAGE ── */
+    async function loadMyPage(){
+        if(!state.token){document.getElementById('mypage-content').innerHTML='<div class="empty"><div class="empty-icon">🔒</div><h3>로그인이 필요합니다</h3><button class="btn btn-primary" style="margin-top:12px" onclick="nav(\'login\')">로그인</button></div>';return;}
+        const el=document.getElementById('mypage-content');
+        const initials=(state.userName||'U').substring(0,1).toUpperCase();
+        el.innerHTML=`
+    <div class="profile-header">
+      <div class="profile-avatar">${initials}</div>
+      <div>
+        <div class="profile-name">${esc(state.userName)}</div>
+        <div class="profile-email">${esc(state.userRole)}</div>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="myTab('profile',this)">프로필</button>
+      <button class="tab" onclick="myTab('orders',this)">내 주문</button>
+      <button class="tab" onclick="myTab('payments',this)">결제 내역</button>
+      <button class="tab" onclick="myTab('notifications',this)">알림</button>
+    </div>
+    <div id="my-tab-orders" class="tab-content">
+      <div id="my-orders"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+    <div id="my-tab-payments" class="tab-content">
+      <div id="my-payments"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+    <div id="my-tab-profile" class="tab-content active">
+      <div class="card" id="my-info-view">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div class="card-title" style="margin:0">내 정보</div>
+          <button class="btn btn-outline btn-sm" onclick="toggleMyEdit(true)">수정하기</button>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>이름</label><div id="view-name" style="padding:8px 0;font-weight:600"></div></div>
+          <div class="form-group"><label>전화번호</label><div id="view-phone" style="padding:8px 0"></div></div>
+        </div>
+        <div class="form-group"><label>Slack ID</label><div id="view-slack" style="padding:8px 0"></div></div>
+        <div class="form-group"><label>이메일</label><div id="view-email" style="padding:8px 0;color:var(--neu500)"></div></div>
+      </div>
+      <div class="card" id="my-info-edit" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div class="card-title" style="margin:0">프로필 수정</div>
+          <button class="btn btn-outline btn-sm" onclick="toggleMyEdit(false)">취소</button>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>이름</label><input id="my-name" placeholder="변경할 이름"></div>
+          <div class="form-group"><label>전화번호</label><input id="my-phone" placeholder="010-1234-5678"></div>
+        </div>
+        <div class="form-group"><label>Slack ID</label><input id="my-slack" placeholder="U01234567"></div>
+        <button class="btn btn-primary" onclick="doUpdateProfile()">저장</button>
+      </div>
+      <div class="card" id="my-biz-view">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div class="card-title" style="margin:0">사업자번호</div>
+          <button class="btn btn-outline btn-sm" onclick="toggleBizEdit(true)">수정하기</button>
+        </div>
+        <div class="form-group"><label>사업자번호</label><div id="view-biz" style="padding:8px 0;font-weight:600"></div></div>
+      </div>
+      <div class="card" id="my-biz-edit" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div class="card-title" style="margin:0">사업자번호 수정</div>
+          <button class="btn btn-outline btn-sm" onclick="toggleBizEdit(false)">취소</button>
+        </div>
+        <div class="form-group"><label>사업자번호</label><input id="my-biz" placeholder="123-45-67890"><div class="form-hint">형식: 000-00-00000</div></div>
+        <button class="btn btn-primary" onclick="doUpdateBusiness()">저장</button>
+      </div>
+      <div class="card" style="border:2px solid var(--red)">
+        <div class="card-title" style="color:var(--red)">계정 탈퇴</div>
+        <p style="font-size:14px;color:var(--neu500);margin-bottom:14px">회원 탈퇴 시 계정 정보가 비활성화됩니다.</p>
+        <button class="btn btn-danger btn-sm" onclick="doDeleteAccount()">회원 탈퇴</button>
+      </div>
+    </div>
+    <div id="my-tab-notifications" class="tab-content">
+      <div class="card" id="my-notifications"><div class="loading"><div class="spinner"></div></div></div>
+    </div>`;
+        // 내 정보 API로 view 채우기
+        if(state.userId){
+            const r=await api('GET','/api/v1/users/me');
+            if(r.ok){
+                const d=r.data?.data||r.data;
+                document.getElementById('view-name').textContent=d.name||'-';
+                document.getElementById('view-phone').textContent=d.phone||'-';
+                document.getElementById('view-slack').textContent=d.slackId||'-';
+                document.getElementById('view-email').textContent=d.email||'-';
+                const bizEl=document.getElementById('view-biz');if(bizEl)bizEl.textContent=d.businessNumber||'-';
+            }
+        }
+    }
+
+    function toggleBizEdit(show){
+        document.getElementById('my-biz-view').style.display=show?'none':'';
+        document.getElementById('my-biz-edit').style.display=show?'':'none';
+        if(show){const v=document.getElementById('view-biz');const i=document.getElementById('my-biz');if(v&&i&&v.textContent!=='-')i.value=v.textContent;}
+    }
+
+    function toggleMyEdit(show){
+        document.getElementById('my-info-view').style.display=show?'none':'';
+        document.getElementById('my-info-edit').style.display=show?'':'none';
+    }
+
+    function myTab(name,el){
+        document.querySelectorAll('#mypage-content .tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('#mypage-content .tab-content').forEach(t=>t.classList.remove('active'));
+        el.classList.add('active');document.getElementById('my-tab-'+name).classList.add('active');
+        if(name==='notifications')loadMyNotifications();
+        else if(name==='orders')loadMyOrders();
+        else if(name==='payments')loadMyPayments();
+    }
+
+    /* ── ORDER STATUS LABELS ── */
+    function orderStatusLabel(s){
+        const m={PENDING:'결제대기',PAID:'결제완료',FAILED:'결제실패',CANCELLED:'취소됨',REFUNDED:'환불됨'};
+        return m[s]||s||'-';
+    }
+    function orderStatusColor(s){
+        const m={PENDING:'#f59e0b',PAID:'#16a34a',FAILED:'#dc2626',CANCELLED:'#6b7280',REFUNDED:'#3b82f6'};
+        return m[s]||'#6b7280';
+    }
+    function orderTypeLabel(t){return t==='DEPOSIT'?'보증금':t==='WINNING'?'낙찰금':t||'-';}
+    function paymentStatusLabel(s){
+        const m={PENDING:'처리중',DONE:'완료',FAILED:'실패',CANCELLED:'취소',PARTIAL_CANCELLED:'부분취소'};
+        return m[s]||s||'-';
+    }
+    function paymentStatusColor(s){
+        const m={PENDING:'#f59e0b',DONE:'#16a34a',FAILED:'#dc2626',CANCELLED:'#6b7280'};
+        return m[s]||'#6b7280';
+    }
+
+    async function loadMyOrders(){
+        const el=document.getElementById('my-orders');if(!el)return;
+        el.innerHTML='<div class="loading"><div class="spinner"></div>불러오는 중...</div>';
+        const [dep,win]=await Promise.all([
+            api('GET','/api/v1/orders/deposit/me?page=0&size=50'),
+            api('GET','/api/v1/orders/winning/me?page=0&size=50')
+        ]);
+        const deposits=(dep.ok?dep.data?.data?.content||[]:[]);
+        const winnings=(win.ok?win.data?.data?.content||[]:[]);
+        const renderOrder=(o,label)=>`
+    <tr>
+      <td><span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${label==='보증금'?'var(--g100)':'#fef3c7'};color:${label==='보증금'?'var(--g800)':'#92400e'};font-weight:600">${label}</span></td>
+      <td style="font-family:monospace;font-size:12px;color:var(--neu500)">${esc(o.orderNumber||'-')}</td>
+      <td style="font-size:12px;font-family:monospace;cursor:pointer;color:var(--g700)" onclick="nav('auction-detail','${o.auctionId}')" title="경매로 이동">${esc(o.auctionId?.substring(0,8)||'-')}...</td>
+      <td style="font-weight:700;color:var(--neu900)">${fmtNum(o.amount||0)}원</td>
+      <td><span style="font-size:12px;font-weight:600;color:${orderStatusColor(o.status)}">${orderStatusLabel(o.status)}</span></td>
+      <td style="font-size:12px;color:var(--neu500)">${o.paymentDueAt?fmtDate(o.paymentDueAt):'-'}</td>
+      <td>${o.status==='FAILED'?`<button class="btn btn-sm btn-outline" onclick="doRepayOrder('${o.orderId}')">재결제</button>`:''}
+      </td>
+    </tr>`;
+        const rows=[...deposits.map(o=>renderOrder(o,'보증금')),...winnings.map(o=>renderOrder(o,'낙찰금'))];
+        el.innerHTML=`
+    <div class="card-title" style="margin-bottom:16px">내 주문 목록</div>
+    ${rows.length?`<div class="table-wrap"><table>
+      <thead><tr><th>종류</th><th>주문번호</th><th>경매ID</th><th>금액</th><th>상태</th><th>납부기한</th><th></th></tr></thead>
+      <tbody>${rows.join('')}</tbody>
+    </table></div>`:
+            '<div class="empty"><div class="empty-icon">📋</div><h3>주문 내역이 없습니다</h3></div>'}`;
+    }
+
+    async function loadMyPayments(){
+        const el=document.getElementById('my-payments');if(!el)return;
+        el.innerHTML='<div class="loading"><div class="spinner"></div>불러오는 중...</div>';
+        // 주문 목록에서 orderId를 뽑아 결제 조회 — 직접 목록 API가 없으므로 주문 기반으로 렌더
+        const [dep,win]=await Promise.all([
+            api('GET','/api/v1/orders/deposit/me?page=0&size=50'),
+            api('GET','/api/v1/orders/winning/me?page=0&size=50')
+        ]);
+        const allOrders=[...(dep.ok?dep.data?.data?.content||[]:[]),(win.ok?win.data?.data?.content||[]:[])];
+        const paid=allOrders.filter(o=>o.status==='PAID');
+        if(!paid.length){el.innerHTML='<div class="card-title" style="margin-bottom:16px">결제 내역</div><div class="empty"><div class="empty-icon">💳</div><h3>결제 내역이 없습니다</h3></div>';return;}
+        el.innerHTML='<div class="card-title" style="margin-bottom:16px">결제 내역</div><div class="loading"><div class="spinner"></div>결제 정보 조회 중...</div>';
+        // orderId로 결제 단건 조회 — payment-service에 목록 API 없어 각건 조회
+        // 실제로는 orderId → paymentId가 필요하므로 주문 정보에서 표시 가능한 정보 렌더
+        const rows=paid.map(o=>`
+    <tr>
+      <td><span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${o.orderType==='DEPOSIT'?'var(--g100)':'#fef3c7'};color:${o.orderType==='DEPOSIT'?'var(--g800)':'#92400e'};font-weight:600">${orderTypeLabel(o.orderType)}</span></td>
+      <td style="font-family:monospace;font-size:12px;color:var(--neu500)">${esc(o.orderNumber||'-')}</td>
+      <td style="font-size:12px;font-family:monospace;cursor:pointer;color:var(--g700)" onclick="nav('auction-detail','${o.auctionId}')" title="경매로 이동">${esc(o.auctionId?.substring(0,8)||'-')}...</td>
+      <td style="font-weight:700;color:var(--neu900)">${fmtNum(o.amount||0)}원</td>
+      <td><span style="font-size:12px;font-weight:600;color:#16a34a">완료</span></td>
+      <td style="font-size:12px;color:var(--neu500)">${fmtDate(o.updatedAt)}</td>
+    </tr>`);
+        el.innerHTML=`
+    <div class="card-title" style="margin-bottom:16px">결제 내역</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>종류</th><th>주문번호</th><th>경매ID</th><th>금액</th><th>상태</th><th>결제일</th></tr></thead>
+      <tbody>${rows.join('')}</tbody>
+    </table></div>`;
+    }
+
+    async function doRepayOrder(orderId){
+        if(!confirm('잔금 재결제를 진행하시겠습니까?'))return;
+        const r=await api('POST',`/api/v1/payments/repay/${orderId}`);
+        if(r.ok){toast('재결제가 완료되었습니다.','success');loadMyOrders();}
+        else toast('재결제 실패: '+(r.data?.message||''),'error');
+    }
+    async function loadMyNotifications(){
+        const el=document.getElementById('my-notifications');if(!el)return;
+        const r=await api('GET','/api/v1/notifications?page=0&size=20');
+        if(r.ok){
+            const items=r.data?.data?.content||[];
+            el.innerHTML=`<div class="card-title">알림 목록</div>`+(items.length?items.map(n=>`<div class="noti-item"><div class="noti-icon" style="background:var(--g100)">🔔</div><div class="noti-text"><div class="noti-title">${esc(n.message||n.title||'-')}</div><div class="noti-time">${fmtDate(n.createdAt)}</div></div></div>`).join(''):'<div class="empty"><div class="empty-icon">🔕</div><h3>알림이 없습니다</h3></div>');
+        }else el.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><h3>불러오기 실패</h3></div>';
+    }
+    async function doUpdateProfile(){
+        const b={};const n=document.getElementById('my-name')?.value.trim(),p=document.getElementById('my-phone')?.value.trim(),s=document.getElementById('my-slack')?.value.trim();
+        if(n)b.name=n;if(p)b.phone=p;if(s)b.slackId=s;
+        const r=await api('PATCH','/api/v1/users/me/profile',b);
+        if(r.ok)toast('프로필이 수정되었습니다.','success');else toast('수정 실패','error');
+    }
+    async function doUpdateBusiness(){
+        const bz=document.getElementById('my-biz')?.value.trim();if(!bz)return toast('사업자번호를 입력하세요.','error');
+        const r=await api('PATCH','/api/v1/users/me/business',{businessNumber:bz});
+        if(r.ok)toast('사업자번호가 수정되었습니다.','success');else toast('수정 실패','error');
+    }
+    async function doDeleteAccount(){
+        if(!confirm('정말 탈퇴하시겠습니까?'))return;
+        const r=await api('DELETE','/api/v1/users/me');
+        if(r.ok){doLogout();toast('탈퇴가 완료되었습니다.','success');}else toast('탈퇴 실패','error');
+    }
+
+    /* ── MODALS ── */
+    function openCreateProductModal(){if(!state.token)return nav('login');document.getElementById('modal-create-product').classList.add('open');}
+    function openCreateAuctionModal(){if(!state.token)return nav('login');document.getElementById('modal-create-auction').classList.add('open');const d=new Date(Date.now()+60*60000);document.getElementById('ca-at').value=d.toISOString().slice(0,16);}
+    function closeModal(id){document.getElementById('modal-'+id).classList.remove('open');}
+    document.querySelectorAll('.modal-backdrop').forEach(b=>b.addEventListener('click',e=>{if(e.target===b)b.classList.remove('open');}));
+
+    /* ── DEPOSIT / PAYMENT ── */
+    let _depositAuctionId=null,_depositOrderId=null,_depositTossOrderId=null;
+
+    function openDepositModal(auctionId,amount){
+        if(!state.token)return nav('login');
+        _depositAuctionId=auctionId;
+        _depositOrderId=null;_depositTossOrderId=null;
+        document.getElementById('deposit-amount-label').textContent=fmtNum(amount)+'원';
+        document.getElementById('deposit-toss-section').style.display='';
+        document.getElementById('deposit-confirm-section').style.display='none';
+        document.getElementById('dep-payment-key').value='';
+        document.getElementById('dep-toss-order-id').value='';
+        document.getElementById('modal-deposit').classList.add('open');
+    }
+
+    async function initiateDepositPayment(){
+        if(!_depositAuctionId)return;
+        // 1. 보증금 주문 생성
+        const r=await api('POST','/api/v1/orders/deposit',{auctionId:_depositAuctionId});
+        if(!r.ok)return toast('주문 생성 실패: '+(r.data?.message||r.data?.data?.message||''),'error');
+        const order=r.data?.data||r.data;
+        _depositOrderId=order.orderId;
+        _depositTossOrderId=order.orderNumber; // tossOrderId = orderNumber
+        document.getElementById('dep-toss-order-id').value=order.orderNumber||'';
+        // 2. 토스 결제창 안내 (실제 연동 시 토스 SDK 호출)
+        toast('주문이 생성되었습니다. 결제 정보를 입력하세요.','success');
+        document.getElementById('deposit-toss-section').style.display='none';
+        document.getElementById('deposit-confirm-section').style.display='';
+    }
+
+    async function confirmDepositPayment(){
+        const paymentKey=document.getElementById('dep-payment-key').value.trim();
+        const tossOrderId=document.getElementById('dep-toss-order-id').value.trim();
+        if(!paymentKey)return toast('paymentKey를 입력하세요.','error');
+        const amtLabel=document.getElementById('deposit-amount-label').textContent.replace(/[^0-9]/g,'');
+        const amount=parseInt(amtLabel)||0;
+        const r=await api('POST','/api/v1/payments/confirm',{paymentKey,tossOrderId,amount});
+        if(r.ok){
+            toast('보증금 결제가 완료되었습니다.','success');
+            closeModal('deposit');
+        }else{
+            toast('결제 승인 실패: '+(r.data?.message||r.data?.data?.message||JSON.stringify(r.data)),'error');
+        }
+    }
+
+    async function viewPaymentDetail(paymentId){
+        const el=document.getElementById('payment-detail-content');
+        el.innerHTML='<div class="loading"><div class="spinner"></div></div>';
+        document.getElementById('modal-payment-detail').classList.add('open');
+        const r=await api('GET',`/api/v1/payments/${paymentId}`);
+        if(!r.ok){el.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><h3>조회 실패</h3></div>';return;}
+        const p=r.data?.data||r.data;
+        el.innerHTML=`
+    <div style="display:grid;gap:12px">
+      <div class="form-group"><label>결제 ID</label><div style="font-family:monospace;font-size:12px">${esc(p.paymentId)}</div></div>
+      <div class="form-group"><label>경매명</label><div style="font-weight:600">${esc(p.auctionTitle||'-')}</div></div>
+      <div class="form-row">
+        <div class="form-group"><label>종류</label><div>${p.paymentType==='DEPOSIT'?'보증금':p.paymentType==='WINNING'?'낙찰금':p.paymentType||'-'}</div></div>
+        <div class="form-group"><label>상태</label><div style="font-weight:600;color:${paymentStatusColor(p.status)}">${paymentStatusLabel(p.status)}</div></div>
+      </div>
+      <div class="form-group"><label>금액</label><div style="font-size:20px;font-weight:800;color:var(--g800)">${fmtNum(p.amount||0)}원</div></div>
+      ${p.paymentKey?`<div class="form-group"><label>paymentKey</label><div style="font-family:monospace;font-size:11px;word-break:break-all">${esc(p.paymentKey)}</div></div>`:''}
+      <div class="form-row">
+        <div class="form-group"><label>요청일시</label><div style="font-size:13px">${fmtDate(p.requestedAt)}</div></div>
+        ${p.approvedAt?`<div class="form-group"><label>승인일시</label><div style="font-size:13px">${fmtDate(p.approvedAt)}</div></div>`:''}
+      </div>
+    </div>`;
+    }
+
+    async function doCreateProduct(){
+        const b={name:document.getElementById('cp-name').value.trim(),description:document.getElementById('cp-desc').value.trim(),quantity:document.getElementById('cp-qty').value.trim()};
+        if(!b.name||!b.description||!b.quantity)return toast('모든 항목을 입력하세요.','error');
+        const r=await api('POST','/api/v1/products',b);
+        if(r.ok){toast('상품이 등록되었습니다.','success');closeModal('create-product');loadProducts();}else toast('등록 실패: '+(r.data?.message||''),'error');
+    }
+    async function doCreateAuction(){
+        const pid=document.getElementById('ca-pid').value.trim(),sp=parseInt(document.getElementById('ca-sp').value),bu=parseInt(document.getElementById('ca-bu').value),at=document.getElementById('ca-at').value;
+        if(!pid||!sp||!bu||!at)return toast('모든 항목을 입력하세요.','error');
+        const r=await api('POST','/api/v1/auctions',{productId:pid,startPrice:sp,bidUnit:bu,startAt:at});
+        if(r.ok){toast('경매가 등록되었습니다.','success');closeModal('create-auction');loadAuctions();}else toast('등록 실패: '+(r.data?.message||''),'error');
+    }
+
+    /* ── ADMIN ── */
+    async function loadAdminUsers(){
+        const el=document.getElementById('admin-tab-users');
+        el.innerHTML='<div class="loading"><div class="spinner"></div>불러오는 중...</div>';
+        const r=await api('GET','/api/v1/users/all?page=0&size=50');
+        if(r.ok){
+            const items=r.data?.data?.content||[];
+            const filterRow=`<div class="filter-bar" style="margin-bottom:16px">
+      <span class="filter-label">역할</span>
+      <select id="admin-role-f" onchange="loadAdminUsersFiltered()"><option value="">전체</option><option>BUYER</option><option>SELLER</option><option>MANAGER</option><option>MASTER</option></select>
+      <span class="filter-label">상태</span>
+      <select id="admin-status-f" onchange="loadAdminUsersFiltered()"><option value="">전체</option><option>ACTIVE</option><option>SUSPENDED</option><option>DELETED</option></select>
+    </div>`;
+            el.innerHTML=filterRow+`<div class="table-wrap"><table>
+      <thead><tr><th>이름</th><th>역할</th><th>상태</th><th>이메일</th><th>관리</th></tr></thead>
+      <tbody>${items.map(u=>`<tr>
+        <td style="font-weight:600">${esc(u.name||'-')}</td>
+        <td><span class="badge-role role-${esc(u.role)}">${esc(u.role||'-')}</span></td>
+        <td>${u.status==='ACTIVE'?'<span style="color:var(--g700);font-weight:600">활성</span>':u.status==='SUSPENDED'?'<span style="color:var(--red);font-weight:600">정지</span>':'<span style="color:var(--neu500)">탈퇴</span>'}</td>
+        <td style="color:var(--neu500)">${esc(u.email||'-')}</td>
+        <td><div class="br" style="gap:5px">
+          <button class="btn btn-outline btn-sm" onclick="adminViewUser('${u.id||u.userId}')">상세</button>
+          ${u.status==='ACTIVE'?`<button class="btn btn-danger btn-sm" onclick="adminSuspend('${u.id||u.userId}')">정지</button>`:''}
+          ${u.status==='SUSPENDED'?`<button class="btn btn-outline btn-sm" onclick="adminUnsuspend('${u.id||u.userId}')">해제</button>`:''}
+        </div></td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+        }else el.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><h3>불러오기 실패. 관리자 권한을 확인하세요.</h3></div>';
+    }
+    async function loadAdminUsersFiltered(){
+        const el=document.getElementById('admin-tab-users');
+        const role=document.getElementById('admin-role-f')?.value||'',status=document.getElementById('admin-status-f')?.value||'';
+        const q=new URLSearchParams({page:'0',size:'50'});if(role)q.set('role',role);if(status)q.set('status',status);
+        const r=await api('GET',`/api/v1/users/all?${q}`);
+        if(r.ok){
+            const items=r.data?.data?.content||[];
+            const tbody=el.querySelector('tbody');if(!tbody)return;
+            tbody.innerHTML=items.map(u=>`<tr><td style="font-weight:600">${esc(u.name||'-')}</td><td><span class="badge-role role-${esc(u.role)}">${esc(u.role||'-')}</span></td><td>${u.status==='ACTIVE'?'<span style="color:var(--g700);font-weight:600">활성</span>':u.status==='SUSPENDED'?'<span style="color:var(--red);font-weight:600">정지</span>':'<span style="color:var(--neu500)">탈퇴</span>'}</td><td style="color:var(--neu500)">${esc(u.email||'-')}</td><td><div class="br" style="gap:5px"><button class="btn btn-outline btn-sm" onclick="adminViewUser('${u.id||u.userId}')">상세</button>${u.status==='ACTIVE'?`<button class="btn btn-danger btn-sm" onclick="adminSuspend('${u.id||u.userId}')">정지</button>`:''}${u.status==='SUSPENDED'?`<button class="btn btn-outline btn-sm" onclick="adminUnsuspend('${u.id||u.userId}')">해제</button>`:''}</div></td></tr>`).join('');
+        }
+    }
+    async function adminSuspend(uid){if(!confirm('이 회원을 정지하시겠습니까?'))return;const r=await api('PATCH','/api/v1/users/suspended',{userId:uid});if(r.ok){toast('정지되었습니다.','success');loadAdminUsers();}else toast('실패','error');}
+    async function adminUnsuspend(uid){const r=await api('PATCH','/api/v1/users/unsuspended',{userId:uid});if(r.ok){toast('정지가 해제되었습니다.','success');loadAdminUsers();}else toast('실패','error');}
+    async function adminViewUser(uid){
+        const r=await api('GET',`/api/v1/user/one?userId=${uid}`);
+        if(!r.ok){toast('유저 조회 실패','error');return;}
+        const u=r.data?.data||r.data||{};
+        const statusLabel=u.status==='ACTIVE'?'<span style="color:var(--g700);font-weight:600">활성</span>':u.status==='SUSPENDED'?'<span style="color:var(--red);font-weight:600">정지</span>':'<span style="color:var(--neu500)">탈퇴</span>';
+        document.getElementById('user-detail-content').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="form-group"><label class="form-label">이름</label><div style="font-weight:600">${esc(u.name||'-')}</div></div>
+      <div class="form-group"><label class="form-label">이메일</label><div style="color:var(--neu500)">${esc(u.email||'-')}</div></div>
+      <div class="form-group"><label class="form-label">역할</label><span class="badge-role role-${esc(u.role)}">${esc(u.role||'-')}</span></div>
+      <div class="form-group"><label class="form-label">상태</label>${statusLabel}</div>
+      <div class="form-group"><label class="form-label">사업자번호</label><div style="color:var(--neu500)">${esc(u.businessNumber||'-')}</div></div>
+      <div class="form-group"><label class="form-label">Slack ID</label><div style="color:var(--neu500)">${esc(u.slackId||'-')}</div></div>
+      <div class="form-group"><label class="form-label">유저 ID</label><div style="font-family:monospace;font-size:12px;display:flex;align-items:center;gap:8px">${esc(uid)}<button class="btn btn-outline btn-sm" onclick="copyText('${uid}','유저 ID')">복사</button></div></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        ${u.status==='ACTIVE'?`<button class="btn btn-danger" onclick="adminSuspend('${uid}');closeModal('user-detail')">정지</button>`:''}
+        ${u.status==='SUSPENDED'?`<button class="btn btn-outline" onclick="adminUnsuspend('${uid}');closeModal('user-detail')">정지 해제</button>`:''}
+        <button class="btn btn-outline" onclick="closeModal('user-detail')">닫기</button>
+      </div>
+    </div>`;
+        document.getElementById('modal-user-detail').classList.add('open');
+    }
+
+    function adminTab(name,el){
+        document.querySelectorAll('#admin-tabs .tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('#page-admin .tab-content').forEach(t=>t.classList.remove('active'));
+        el.classList.add('active');document.getElementById('admin-tab-'+name).classList.add('active');
+        if(name==='users')loadAdminUsers();
+        else if(name==='products-mgmt')loadAdminProducts();
+        else if(name==='auctions-mgmt')loadAdminAuctions();
+        else if(name==='ai-docs')loadAdminAiDocs();
+    }
+    async function loadAdminAuctions(){
+        const el=document.getElementById('admin-tab-auctions-mgmt');
+        el.innerHTML='<div class="loading"><div class="spinner"></div>불러오는 중...</div>';
+        const r=await api('GET','/api/v1/auctions?page=0&size=30');
+        if(r.ok){
+            const items=r.data?.data?.content||[];
+            el.innerHTML=`<div class="table-wrap"><table><thead><tr><th>상품명</th><th>상태</th><th>시작가</th><th>시작 시각</th><th>제어</th></tr></thead><tbody>${items.map(a=>`<tr>
+      <td style="font-weight:600;cursor:pointer;color:var(--g800)" onclick="nav('auction-detail','${a.id||a.auctionId}')">${esc(a.product?.name||a.productName||'-')}</td>
+      <td><span class="card-status status-${a.status}" style="position:static;display:inline-block">${statusLabel(a.status)}</span></td>
+      <td>${fmtNum(a.startPrice||0)}원</td>
+      <td>${fmtDate(a.startAt)}</td>
+      <td><div class="br" style="gap:5px">
+        ${a.status==='READY'?`<button class="btn btn-primary btn-sm" onclick="adminStartAuction('${a.id||a.auctionId}');loadAdminAuctions()">시작</button>`:''}
+        ${a.status==='PROGRESS'?`<button class="btn btn-accent btn-sm" onclick="adminCloseAuction('${a.id||a.auctionId}');setTimeout(loadAdminAuctions,500)">마감</button>`:''}
+        ${(a.status==='READY'||a.status==='PROGRESS')?`<button class="btn btn-danger btn-sm" onclick="adminCancelAuction('${a.id||a.auctionId}').then(loadAdminAuctions)">취소</button>`:''}
+      </div></td>
+    </tr>`).join('')}</tbody></table></div>`;
+        }else el.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><h3>불러오기 실패</h3></div>';
+    }
+    async function loadAdminProducts(){
+        const el=document.getElementById('admin-tab-products-mgmt');
+        el.innerHTML='<div class="loading"><div class="spinner"></div>불러오는 중...</div>';
+        const r=await api('GET','/api/v1/products?page=0&size=50');
+        if(!r.ok){el.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><h3>불러오기 실패</h3></div>';return;}
+        const items=r.data?.data?.content||[];
+        el.innerHTML=`<div class="table-wrap"><table><thead><tr><th>상품명</th><th>설명</th><th>수량</th><th>상품 ID</th><th>삭제</th></tr></thead><tbody>${
+            items.length?items.map(p=>`<tr>
+      <td style="font-weight:600">${esc(p.name||'-')}</td>
+      <td style="color:var(--neu500);font-size:13px">${esc((p.description||'').substring(0,30))}</td>
+      <td>${esc(p.quantity||'-')}</td>
+      <td style="font-size:11px;font-family:monospace;cursor:pointer" onclick="copyText('${p.id||p.productId||''}','상품 ID')" title="클릭 복사">${esc((p.id||p.productId||'').toString())}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="adminDeleteProduct('${p.id||p.productId}')">삭제</button></td>
+    </tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--neu500)">상품 없음</td></tr>'
+        }</tbody></table></div>`;
+    }
+
+    async function adminDeleteProduct(id){
+        if(!confirm('상품을 삭제하시겠습니까? 연결된 경매도 먼저 취소해야 합니다.'))return;
+        const r=await api('DELETE',`/api/v1/products/${id}`);
+        if(r.ok){toast('상품이 삭제됐습니다.','success');loadAdminProducts();}
+        else toast('삭제 실패: '+(r.data?.message||''),'error');
+    }
+
+    async function loadAdminAiDocs(){
+        const el=document.getElementById('admin-tab-ai-docs');
+        el.innerHTML=`<div class="card">
+    <div class="card-title">AI 문서 등록 (RAG)</div>
+    <div class="form-group"><label>source 식별자</label><input id="ai-doc-src" placeholder="product-manual-v1"></div>
+    <div class="form-group"><label>파일 선택 (PDF, Word, Excel, txt)</label><input type="file" id="ai-doc-file"></div>
+    <button class="btn btn-primary" onclick="doUploadAiDoc()">등록</button>
+  </div>
+  <div id="ai-doc-list-wrap"><div class="loading"><div class="spinner"></div></div></div>`;
+        const r=await api('GET','/api/v1/admin/ai/documents?page=0&size=20');
+        const wrap=document.getElementById('ai-doc-list-wrap');
+        if(r.ok){
+            const items=r.data?.data?.content||[];
+            wrap.innerHTML=`<div class="table-wrap" style="margin-top:16px"><table><thead><tr><th>source</th><th>파일명</th><th>등록일</th><th>삭제</th></tr></thead><tbody>${items.length?items.map(d=>`<tr><td>${esc(d.source||'-')}</td><td>${esc(d.fileName||'-')}</td><td>${fmtDate(d.createdAt)}</td><td><button class="btn btn-danger btn-sm" onclick="deleteAiDoc('${esc(d.source||'')}')">삭제</button></td></tr>`).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--neu500)">등록된 문서 없음</td></tr>'}</tbody></table></div>`;
+        }else wrap.innerHTML='';
+    }
+    async function doUploadAiDoc(){
+        const src=document.getElementById('ai-doc-src')?.value.trim(),f=document.getElementById('ai-doc-file')?.files[0];
+        if(!src||!f)return toast('source와 파일을 선택하세요.','error');
+        const fd=new FormData();fd.append('file',f);fd.append('source',src);
+        const h={};if(state.token)h['Authorization']='Bearer '+state.token;
+        const res=await fetch(GW+'/api/v1/admin/ai/documents',{method:'POST',headers:h,body:fd});
+        if(res.ok){toast('문서가 등록되었습니다.','success');loadAdminAiDocs();}else toast('등록 실패','error');
+    }
+    async function deleteAiDoc(src){
+        if(!confirm(`'${src}' 문서를 삭제하시겠습니까?`))return;
+        const r=await api('DELETE',`/api/v1/admin/ai/documents/${encodeURIComponent(src)}`);
+        if(r.ok){toast('삭제되었습니다.','success');loadAdminAiDocs();}else toast('삭제 실패','error');
+    }
+
+    /* ── AI CHAT ── */
+    async function loadChatSessions(){
+        if(!state.token){document.getElementById('chat-session-list').innerHTML='<div style="padding:20px;text-align:center;color:var(--neu500);font-size:13px">로그인 후 이용 가능합니다</div>';return;}
+        const r=await api('GET','/api/v1/ai/sessions?page=0&size=20');
+        if(r.ok){
+            const items=r.data?.data?.content||[];
+            state.chatSessions=items;
+            const el=document.getElementById('chat-session-list');
+            el.innerHTML=items.length?items.map((s,i)=>`<div class="chat-session-item${i===0&&state.chatSessionId===s.id?' active':''}" onclick="selectSession('${s.id||s.sessionId}')">💬 세션 ${fmtDate(s.createdAt||'')}</div>`).join(''):'<div style="padding:20px;text-align:center;color:var(--neu500);font-size:13px">대화 내역이 없습니다</div>';
+            if(items.length&&!state.chatSessionId){selectSession(items[0].id||items[0].sessionId);}
+        }
+    }
+    async function createChatSession(){
+        if(!state.token)return toast('로그인이 필요합니다.','error');
+        const r=await api('POST','/api/v1/ai/sessions');
+        if(r.ok){const d=r.data?.data||r.data;state.chatSessionId=d.id||d.sessionId;loadChatSessions();clearChat();}
+        else toast('세션 생성 실패','error');
+    }
+    async function selectSession(id){
+        state.chatSessionId=id;
+        document.querySelectorAll('.chat-session-item').forEach(el=>el.classList.remove('active'));
+        const r=await api('GET',`/api/v1/ai/sessions/${id}/messages`);
+        clearChat();
+        if(r.ok){
+            const msgs=r.data?.data||[];
+            msgs.forEach(m=>{appendChat(m.role==='USER'?'user':'ai',m.content||'');});
+        }
+    }
+    function clearChat(){
+        document.getElementById('chat-messages').innerHTML=`<div class="msg msg-ai"><div class="msg-bubble">안녕하세요! 산지직경 AI 상담사입니다. 🌾<br>농산물 경매에 대해 궁금한 점을 물어보세요.</div><div class="msg-time">지금</div></div>`;
+    }
+    function appendChat(role,text){
+        const msgs=document.getElementById('chat-messages');
+        const isUser=role==='user';
+        const now=new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+        msgs.insertAdjacentHTML('beforeend',`<div class="msg msg-${isUser?'user':'ai'}"><div class="msg-bubble">${esc(text)}</div><div class="msg-time">${now}</div></div>`);
+        msgs.scrollTop=msgs.scrollHeight;
+    }
+    async function sendChat(){
+        if(!state.token)return toast('로그인이 필요합니다.','error');
+        if(!state.chatSessionId){await createChatSession();if(!state.chatSessionId)return;}
+        const input=document.getElementById('chat-input');
+        const msg=input.value.trim();if(!msg)return;
+        input.value='';
+        appendChat('user',msg);
+        const r=await api('POST',`/api/v1/ai/sessions/${state.chatSessionId}/chat`,{message:msg});
+        if(r.ok){const d=r.data?.data||r.data;appendChat('ai',d.answer||d.message||d.response||JSON.stringify(d));}
+        else appendChat('ai','죄송합니다, 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+    }
+
+    /* ── INIT ── */
+    loadHomeAuctions();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+<script>
+    if(typeof Stomp==='undefined'&&typeof StompJs!=='undefined'){window.Stomp={over:ws=>new StompJs.Client({webSocketFactory:()=>ws})};}
+</script>
+</body>
+</html>

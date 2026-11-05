@@ -2,9 +2,10 @@ package com.bankrupang.sanjijk.user.infrastructure.keycloak;
 
 import com.bankrupang.sanjijk.user.domain.UserRole;
 import com.bankrupang.sanjijk.user.domain.exception.KeycloakLoginFailedException;
+import com.bankrupang.sanjijk.user.domain.exception.KeycloakUnavailableException;
 import com.bankrupang.sanjijk.user.domain.exception.UserKeycloakCreationFailedException;
 import com.bankrupang.sanjijk.user.presentation.dto.response.KeycloakTokenResponse;
-import jakarta.ws.rs.InternalServerErrorException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
@@ -12,19 +13,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
-import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 import java.util.List;
@@ -79,6 +78,9 @@ public class KeycloakService {
         }
     }
 
+    // 로그인 — Circuit Breaker 적용
+    // Keycloak 응답 3초 초과 또는 실패율 50% 초과 시 loginFallback 호출
+    @CircuitBreaker(name = "keycloak", fallbackMethod = "loginFallback")
     public KeycloakTokenResponse login(String username, String password) {
         try {
             Keycloak keycloakLogin = KeycloakBuilder.builder()
@@ -102,25 +104,41 @@ public class KeycloakService {
             log.error("Keycloak 로그인 400: {}", e.getResponse().readEntity(String.class));
             throw new KeycloakLoginFailedException();
         }
+    }
 
+    // login() fallback — Circuit OPEN 또는 타임아웃 시 호출
+    private KeycloakTokenResponse loginFallback(String username, String password, Exception e) {
+        log.error("[Circuit Breaker] Keycloak 로그인 불가 - username: {}, error: {}", username, e.getMessage());
+        if (e instanceof io.github.resilience4j.circuitbreaker.CallNotPermittedException) {
+            throw new KeycloakUnavailableException();
+        }
+        throw new KeycloakLoginFailedException();
     }
 
     public void deleteUser(UUID keycloakUserId) {
         keycloak.realm(realm).users().get(keycloakUserId.toString()).remove();
     }
 
-    // 기존 세션 전체 폐기 (중복 로그인 방지 - 새 로그인 시 호출)
+    // 세션 폐기 — Circuit Breaker 적용
+    // Keycloak 장애 시 세션 폐기 실패해도 로그인 자체는 계속 진행 (가용성 우선)
+    @CircuitBreaker(name = "keycloak", fallbackMethod = "revokeSessionsFallback")
     public void revokeUserSessions(UUID keycloakUserId) {
         try {
             keycloak.realm(realm).users().get(keycloakUserId.toString()).logout();
             log.info("[Keycloak] 기존 세션 폐기 완료 - userId: {}", keycloakUserId);
         } catch (Exception e) {
-            // 세션이 없는 경우 등 무시
             log.debug("[Keycloak] 세션 폐기 시도 - userId: {}, msg: {}", keycloakUserId, e.getMessage());
         }
     }
 
-    // Refresh Token으로 새 Access Token 발급
+    // revokeUserSessions() fallback — 세션 폐기 실패는 로그인을 막지 않음
+    private void revokeSessionsFallback(UUID keycloakUserId, Exception e) {
+        log.warn("[Circuit Breaker] 세션 폐기 불가 - userId: {}, 로그인 계속 진행. error: {}",
+                keycloakUserId, e.getMessage());
+    }
+
+    // Refresh Token으로 새 Access Token 발급 — Circuit Breaker 적용
+    @CircuitBreaker(name = "keycloak", fallbackMethod = "refreshTokenFallback")
     public KeycloakTokenResponse refreshToken(String refreshToken) {
         try {
             MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
@@ -150,5 +168,14 @@ public class KeycloakService {
             log.warn("[Keycloak] 토큰 갱신 실패: {}", e.getMessage());
             throw new KeycloakLoginFailedException();
         }
+    }
+
+    // refreshToken() fallback
+    private KeycloakTokenResponse refreshTokenFallback(String refreshToken, Exception e) {
+        log.error("[Circuit Breaker] Keycloak 토큰 갱신 불가 - error: {}", e.getMessage());
+        if (e instanceof io.github.resilience4j.circuitbreaker.CallNotPermittedException) {
+            throw new KeycloakUnavailableException();
+        }
+        throw new KeycloakLoginFailedException();
     }
 }

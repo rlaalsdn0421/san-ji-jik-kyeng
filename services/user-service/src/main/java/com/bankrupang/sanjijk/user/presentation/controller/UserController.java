@@ -47,7 +47,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasAnyRole('MASTER','MANAGER')")
-    @GetMapping("/api/v1/user/one")
+    @GetMapping("/api/v1/users/one")
     public ResponseEntity<ApiResponse<AdminUserDetailResponse>> getUser(
             @RequestParam UUID userId) {
         return ResponseEntity.status(HttpStatus.OK)

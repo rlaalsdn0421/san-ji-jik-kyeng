@@ -2,18 +2,6 @@ server:
   port: 19093
 
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB:postgres}?currentSchema=bid_schema
-    username: ${POSTGRES_USER:postgres}
-    password: ${POSTGRES_PASSWORD:postgres}
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        default_schema: bid_schema
-        dialect: org.hibernate.dialect.PostgreSQLDialect
   data:
     redis:
       host: localhost

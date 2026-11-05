@@ -13,7 +13,7 @@ spring:
       port: 6379
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         default_schema: user_schema

@@ -1,0 +1,28 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+
+     execution: local
+        script: multi-auction-throughput-test.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 200 max VUs, 1m30s max duration (incl. graceful stop):
+              * multi_auction_bids: 200 iterations shared among 200 VUs (maxDuration: 1m0s, gracefulStop: 30s)
+
+
+running (0m01.0s), 009/200 VUs, 191 complete and 0 interrupted iterations
+multi_auction_bids   [  96% ] 200 VUs  0m01.0s/1m0s  191/200 shared iters
+time="2026-09-22T19:27:13+09:00" level=info msg="\n===== 다중 경매 처리량 테스트 결과 =====" source=console
+time="2026-09-22T19:27:13+09:00" level=info msg="경매 수: 20, 경매당 비더: 10, 총 VU: 200" source=console
+time="2026-09-22T19:27:13+09:00" level=info msg="총 시도: 200, 성공: 20, 실패(정상거부): 180, 미응답(3s): 0, 연결오류: 0" source=console
+time="2026-09-22T19:27:13+09:00" level=info msg="\n✅ 정상: 경매당 성공 1건 이하 유지" source=console
+time="2026-09-22T19:27:13+09:00" level=info msg="\n===== 지표 =====" source=console
+time="2026-09-22T19:27:13+09:00" level=info msg="bid_latency_ms: avg=351.1 min=98.0 p(90)=432.1 p(95)=439.0 max=1117.0" source=console
+time="2026-09-22T19:27:13+09:00" level=info msg="처리시간: 1.12s, TPS(iterations/s): 178.2" source=console
+
+running (0m01.1s), 000/200 VUs, 200 complete and 0 interrupted iterations
+multi_auction_bids ✓ [ 100% ] 200 VUs  0m01.1s/1m0s  200/200 shared iters

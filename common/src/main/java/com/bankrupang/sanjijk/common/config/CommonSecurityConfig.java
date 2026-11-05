@@ -30,7 +30,8 @@ public class CommonSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/health", "/actuator/prometheus").permitAll()
+                        .requestMatchers("/api/v1/auth/**", "/internal/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new GatewayHeaderAuthFilter(),
