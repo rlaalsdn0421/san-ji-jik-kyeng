@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +42,75 @@ public class BidService {
     private final ObjectMapper objectMapper;
     private final BidEventProducer bidEventProducer;
 
+    // 입찰 검사·갱신·브로드캐스트 발행을 Redis 안에서 한 번에 처리한다(락 불필요).
+    // shortcut: endAt은 LocalDateTime.toString 형식만 파싱, 그 외 형식이면 AUCTION_ENDED로 거부. 다른 형식을 쓰게 되면 파서 교체
+    private static final String BID_LUA = """
+            local h = redis.call('HMGET', KEYS[1], 'sellerId', 'status', 'endAt', 'currentPrice', 'highestBidderId', 'bidUnit', 'productName')
+            local seller, status, endAt, cur, prev, unit, product = h[1], h[2], h[3], h[4], h[5], h[6], h[7]
+            if not cur then return {'AUCTION_NOT_FOUND'} end
+            if seller == ARGV[1] then return {'SELLER_BID'} end
+            if status ~= 'PROGRESS' then return {'AUCTION_NOT_IN_PROGRESS'} end
+            local function ts(s)
+              local y, mo, d, hh, mi, ss, fr = string.match(s, '^(%d+)-(%d+)-(%d+)T(%d+):(%d+):?(%d*)%.?(%d*)')
+              if not y then return nil end
+              local v = ((((tonumber(y) * 100 + tonumber(mo)) * 100 + tonumber(d)) * 100 + tonumber(hh)) * 100 + tonumber(mi)) * 100 + (tonumber(ss) or 0)
+              if fr ~= '' then v = v + tonumber('0.' .. fr) end
+              return v
+            end
+            local e, n = ts(endAt or ''), ts(ARGV[2])
+            if not e or not n or n > e then return {'AUCTION_ENDED'} end
+            cur = tonumber(cur)
+            if tonumber(ARGV[3]) ~= cur then return {'BID_PRICE_OUTDATED'} end
+            local price = tonumber(ARGV[4])
+            if price <= cur then return {'BID_PRICE_TOO_LOW'} end
+            prev = prev or ''
+            if prev == ARGV[1] then return {'ALREADY_HIGHEST_BIDDER'} end
+            if redis.call('EXISTS', KEYS[2]) == 0 then return {'DEPOSIT_NOT_PAID'} end
+            redis.call('HSET', KEYS[1], 'endAt', ARGV[5], 'currentPrice', ARGV[4], 'highestBidderId', ARGV[1])
+            redis.call('EXPIRE', KEYS[1], ARGV[6])
+            redis.call('ZADD', KEYS[3], ARGV[7], ARGV[8])
+            local nextMin = price + tonumber(unit)
+            redis.call('PUBLISH', KEYS[4], string.format(
+              '{"type":"BID_UPDATED","auctionId":"%s","currentPrice":%d,"previousHighestBidderId":"%s","highestBidderId":"%s","nextMinPrice":%d}',
+              ARGV[8], price, prev, ARGV[1], nextMin))
+            return {'OK', prev, product or '', tostring(nextMin)}
+            """;
+
+    private static final DefaultRedisScript<List> BID_SCRIPT = new DefaultRedisScript<>(BID_LUA, List.class);
+
+    @Value("${bid.lua-enabled:true}")
+    private boolean luaEnabled;
+
     public void bid(UUID auctionId, UUID userId, BidRequestDto request) {
+        if (luaEnabled) {
+            bidWithLua(auctionId, userId, request);
+        } else {
+            bidWithLock(auctionId, userId, request);
+        }
+    }
+
+    private void bidWithLua(UUID auctionId, UUID userId, BidRequestDto request) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime newEndAt = now.plusMinutes(1);
+        long newTtl = Duration.ofMinutes(1).getSeconds() + END_CHECK_TTL_BUFFER_SECONDS;
+        String id = auctionId.toString();
+        List<?> r = redisTemplate.execute(BID_SCRIPT,
+                List.of("auction:" + id + ":info", "auction:" + id + ":deposit:" + userId,
+                        "auction:endings", "auction:" + id + ":bid-event"),
+                userId.toString(), now.toString(), String.valueOf(request.getClientSeenPrice()),
+                String.valueOf(request.getBidPrice()), newEndAt.toString(), String.valueOf(newTtl),
+                String.valueOf(newEndAt.atZone(ZoneId.of("Asia/Seoul")).toEpochSecond()), id);
+
+        String result = (String) r.get(0);
+        if (!"OK".equals(result)) {
+            throw new BidException(BidErrorCode.valueOf(result));
+        }
+        bidEventProducer.sendBidOvertaken(new BidOvertakenEvent(
+                id, (String) r.get(2), (String) r.get(1), request.getBidPrice(),
+                Integer.parseInt((String) r.get(3)), LocalDateTime.now()));
+    }
+
+    private void bidWithLock(UUID auctionId, UUID userId, BidRequestDto request) {
         String lockKey = "auction:" + auctionId + ":lock";
         RLock lock = redissonClient.getLock(lockKey);
 
